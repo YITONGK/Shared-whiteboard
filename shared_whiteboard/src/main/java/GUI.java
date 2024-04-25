@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -7,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Whiteboard extends JFrame implements ActionListener {
+public class GUI extends JFrame implements ActionListener {
 
     private Boolean flag = true;
     public void consoleLog(String s) {
@@ -24,7 +23,7 @@ public class Whiteboard extends JFrame implements ActionListener {
 
 
 
-    public Whiteboard() {
+    public GUI(Boolean isAdmin) {
 
 
         JPanel contentPane = new JPanel();
@@ -41,18 +40,26 @@ public class Whiteboard extends JFrame implements ActionListener {
         // menu bar
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
-        JMenu fileMenu = new JMenu("File");
-        menuBar.add(fileMenu);
-        JMenuItem newFile = new JMenuItem("New");
-        JMenuItem openFile = new JMenuItem("Open");
-        JMenuItem save = new JMenuItem("Save");
-        JMenuItem saveAs = new JMenuItem("Save as");
-        fileMenu.add(newFile);
-        fileMenu.add(openFile);
-        fileMenu.add(save);
-        fileMenu.add(saveAs);
-        JMenu manage = new JMenu("Manage");
-        menuBar.add(manage);
+        if (isAdmin) {
+            JMenu fileMenu = new JMenu("File");
+            menuBar.add(fileMenu);
+            JMenuItem newFile = new JMenuItem("New");
+            JMenuItem openFile = new JMenuItem("Open");
+            JMenuItem save = new JMenuItem("Save");
+            JMenuItem saveAs = new JMenuItem("Save as");
+            JMenuItem exit = new JMenuItem("Exit");
+            fileMenu.add(newFile);
+            fileMenu.add(openFile);
+            fileMenu.add(save);
+            fileMenu.add(saveAs);
+            fileMenu.add(exit);
+            JMenu manage = new JMenu("Manage");
+            menuBar.add(manage);
+        } else {
+            JMenu welcome = new JMenu("'s whiteboard");
+            menuBar.add(welcome);
+        }
+
 
         JButton rectangle = new JButton(new ImageIcon((this.getClass().getResource("rec.png"))));
         JButton circle = new JButton(new ImageIcon((this.getClass().getResource("circle.png"))));
@@ -148,7 +155,7 @@ public class Whiteboard extends JFrame implements ActionListener {
         userList.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                UserListWindow userListWindow = new UserListWindow(Whiteboard.this);
+                UserListWindow userListWindow = new UserListWindow(GUI.this);
                 userListWindow.setVisible(true);
             }
         });
@@ -157,7 +164,7 @@ public class Whiteboard extends JFrame implements ActionListener {
         chatBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ChatWindow chatWindow = new ChatWindow(Whiteboard.this);
+                ChatWindow chatWindow = new ChatWindow(GUI.this);
                 chatWindow.setVisible(true);
             }
         });
@@ -176,9 +183,9 @@ public class Whiteboard extends JFrame implements ActionListener {
 
 
     public static void main(String[] args) {
-        Whiteboard whiteboard = new Whiteboard();
-        whiteboard.setVisible(true);
-        whiteboard.setSize(1100,800);
+        GUI gui = new GUI(true);
+        gui.setVisible(true);
+        gui.setSize(1100,800);
     }
 
     public class UserListWindow extends JDialog {

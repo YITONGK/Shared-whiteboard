@@ -13,10 +13,17 @@ import java.util.ArrayList;
 
 public class Board extends JPanel implements MouseListener, MouseMotionListener {
 
+    private Boolean flag = true;
+    public void consoleLog(String s) {
+        if (flag) {
+            System.out.println(s);
+        }
+    }
 
     public enum Mode {
-        DRAW, RECTANGLE, CIRCLE, OVAL, LINE, TEXT, ERASER
+        RECTANGLE, CIRCLE, OVAL, LINE, DRAW, TEXT, ERASER
     }
+
 
     private Mode currentMode = Mode.DRAW;
 
@@ -33,6 +40,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     public Board() {
         addMouseListener(this);
         addMouseMotionListener(this);
+        setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
 
     public void setCurrentMode(Mode mode) {
@@ -50,7 +58,23 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (currentMode == Mode.TEXT) {
+            String text = JOptionPane.showInputDialog(this, "Enter Text:", "Text Input", JOptionPane.PLAIN_MESSAGE);
+            if (text != null && !text.isEmpty()) {
+                // Calculate font size based on stroke width
+                int fontSize = (int) currentStroke.getLineWidth() * 4;  // Example scaling factor
+                Font textFont = getFont().deriveFont((float) fontSize);
+                FontMetrics metrics = getFontMetrics(textFont);
+                int x = e.getX();
+                int y = e.getY() - metrics.getHeight() / 2 + metrics.getAscent();  // Adjust to center text vertically around the click point
 
+                TextShape textShape = new TextShape(text, x, y, textFont);
+                shapes.add(textShape);
+                shapeColors.add(currentColor);
+                shapeStrokes.add(currentStroke);  // This might not be necessary unless you want to keep track of strokes for text for some reason
+                repaint();
+            }
+        }
     }
 
     @Override
@@ -115,9 +139,30 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        dragEnd = new Point(e.getX(), e.getY());
+        Point newPoint = new Point(e.getX(), e.getY());
+        if (currentMode == Mode.DRAW || currentMode == Mode.ERASER) {
+            if (dragEnd != null) {
+                Shape line = new Line2D.Float(dragEnd, newPoint);
+                shapes.add(line);
+                // Use the background color for eraser mode
+                if (currentMode == Mode.ERASER) {
+                    shapeColors.add(Color.WHITE);  // Assuming the background is white
+                    shapeStrokes.add(new BasicStroke(currentStroke.getLineWidth(), // Keep the line width
+                            BasicStroke.CAP_ROUND,  // Round caps for a smoother erase
+                            BasicStroke.JOIN_ROUND)); // Round joins for smoother erase
+                } else {
+                    shapeColors.add(currentColor); // Regular drawing color
+                    shapeStrokes.add(currentStroke); // Regular stroke
+                }
+            }
+            dragEnd = newPoint; // Update dragEnd to the new point
+        } else {
+            dragEnd = new Point(e.getX(), e.getY());
+        }
+
         repaint();
     }
+
 
     @Override
     public void mouseMoved(MouseEvent e) {
@@ -132,9 +177,16 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         for (int i = 0; i < shapes.size(); i++) {
             g2d.setColor(shapeColors.get(i));
             g2d.setStroke(shapeStrokes.get(i));
-            g2d.draw(shapes.get(i));
+            Shape shape = shapes.get(i);
+            if (shape instanceof TextShape) {
+                TextShape textShape = (TextShape) shape;
+                g2d.setFont(textShape.getFont());
+                g2d.drawString(textShape.getText(), textShape.getX(), textShape.getY());
+            } else {
+                g2d.draw(shape);
+            }
         }
-        if (dragStart != null && dragEnd != null) {
+        if (dragStart != null && dragEnd != null && currentMode != Mode.DRAW) {
             g2d.setColor(currentColor);
             g2d.setStroke(currentStroke);
             switch (currentMode) {
@@ -166,6 +218,8 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
                 case LINE:
                     g2d.draw(new Line2D.Double(dragStart.x, dragStart.y, dragEnd.x, dragEnd.y));
                     break;
+                case DRAW:
+
             }
         }
     }
