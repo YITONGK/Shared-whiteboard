@@ -1,3 +1,4 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -7,6 +8,9 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Shape;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -36,6 +40,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     private Point dragStart;
 
     private Point dragEnd;
+    private BufferedImage background;
 
     public Board() {
         addMouseListener(this);
@@ -173,7 +178,12 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     public void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+        g.setColor(getBackground());
+        g.fillRect(0, 0, getWidth(), getHeight());
         Graphics2D g2d = (Graphics2D) g;
+        if (background != null) {
+            g2d.drawImage(background, 0, 0, getWidth(), getHeight(), null);
+        }
         for (int i = 0; i < shapes.size(); i++) {
             g2d.setColor(shapeColors.get(i));
             g2d.setStroke(shapeStrokes.get(i));
@@ -224,5 +234,29 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         }
     }
 
+    public void clearBoard() {
+        shapes.clear();
+        shapeColors.clear();
+        shapeStrokes.clear();
+        dragStart = null;
+        dragEnd = null;
+        background =null;
+        setBackground(Color.WHITE);
+        repaint();
+
+    }
+
+    public void saveAsPng(File file) throws IOException {
+        BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = image.createGraphics();
+        this.printAll(g2d);
+        g2d.dispose();
+        ImageIO.write(image, "PNG", file);
+    }
+
+    public void setBackgroundImage(File file) throws IOException {
+        background = ImageIO.read(file);
+        repaint();
+    }
 
 }

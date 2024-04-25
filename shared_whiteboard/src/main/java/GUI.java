@@ -1,18 +1,18 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GUI extends JFrame implements ActionListener {
 
-    private Boolean flag = true;
     public void consoleLog(String s) {
-        if (flag) {
-            System.out.println(s);
-        }
+        System.out.println(s);
     }
     private final BasicStroke xs = new BasicStroke(4);
     private final BasicStroke s = new BasicStroke(8);
@@ -44,10 +44,66 @@ public class GUI extends JFrame implements ActionListener {
             JMenu fileMenu = new JMenu("File");
             menuBar.add(fileMenu);
             JMenuItem newFile = new JMenuItem("New");
+            newFile.addActionListener(e -> {
+                board.clearBoard();
+            });
             JMenuItem openFile = new JMenuItem("Open");
+            openFile.addActionListener(e -> {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Select an image file");
+                fileChooser.setAcceptAllFileFilterUsed(false);
+                fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Image files", "png", "jpg", "jpeg", "gif", "bmp"));
+
+                int result = fileChooser.showOpenDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    try {
+                        board.setBackgroundImage(selectedFile);
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(this, "Error loading image: " + ex.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
             JMenuItem save = new JMenuItem("Save");
+            save.addActionListener(e -> {
+                File defaultFile = new File("default.png");  // Default save location and name
+                try {
+                    board.saveAsPng(defaultFile);
+                    JOptionPane.showMessageDialog(this, "Image saved to " + defaultFile.getAbsolutePath());
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Error saving image: " + ex.getMessage(), "Save Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
             JMenuItem saveAs = new JMenuItem("Save as");
+            saveAs.addActionListener(e -> {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Specify a file to save");
+                int userSelection = fileChooser.showSaveDialog(this);
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File fileToSave = fileChooser.getSelectedFile();
+                    try {
+                        board.saveAsPng(new File(fileToSave.getAbsolutePath() + ".png"));
+                        JOptionPane.showMessageDialog(this, "Image saved to " + fileToSave.getAbsolutePath());
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(this, "Error saving image: " + ex.getMessage(), "Save Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
             JMenuItem exit = new JMenuItem("Exit");
+            exit.addActionListener(e -> {
+                int confirmed = JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to exit?",
+                        "Exit Confirmation",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (confirmed == JOptionPane.YES_OPTION) {
+                    // Perform any cleanup operations you need here
+                    dispose(); // Dispose all resources and close the application window
+                    System.exit(0); // Ensure JVM is properly closed
+                }
+            });
             fileMenu.add(newFile);
             fileMenu.add(openFile);
             fileMenu.add(save);
