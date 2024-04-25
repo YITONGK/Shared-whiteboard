@@ -9,17 +9,35 @@ import java.util.List;
 
 public class Whiteboard extends JFrame implements ActionListener {
 
+    private Boolean flag = true;
+    public void consoleLog(String s) {
+        if (flag) {
+            System.out.println(s);
+        }
+    }
+    private final BasicStroke xs = new BasicStroke(4);
+    private final BasicStroke s = new BasicStroke(8);
+    private final BasicStroke m = new BasicStroke(12);
+    private final BasicStroke l = new BasicStroke(16);
+    private final BasicStroke xl = new BasicStroke(20);
+
+
+
 
     public Whiteboard() {
+
 
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
+        Board board = new Board();
+        board.setBounds(25, 85, 1050, 640);
+        board.setBackground(Color.white);
+        contentPane.add(board);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        setBounds(100, 100, 880, 520);
-//        getContentPane().setLayout(new BorderLayout());
         // menu bar
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -43,6 +61,14 @@ public class Whiteboard extends JFrame implements ActionListener {
         JButton draw = new JButton(new ImageIcon((this.getClass().getResource("pen.png"))));
         JButton text = new JButton(new ImageIcon((this.getClass().getResource("text.png"))));
         JButton eraser = new JButton(new ImageIcon((this.getClass().getResource("eraser.png"))));
+
+        rectangle.addActionListener(e -> board.setCurrentMode(Board.Mode.RECTANGLE));
+        circle.addActionListener(e -> board.setCurrentMode(Board.Mode.CIRCLE));
+        oval.addActionListener(e -> board.setCurrentMode(Board.Mode.OVAL));
+        line.addActionListener(e -> board.setCurrentMode(Board.Mode.LINE));
+        draw.addActionListener(e -> board.setCurrentMode(Board.Mode.DRAW));
+        text.addActionListener(e -> board.setCurrentMode(Board.Mode.TEXT));
+        eraser.addActionListener(e -> board.setCurrentMode(Board.Mode.ERASER));
 
         List<JButton> buttonList = new ArrayList<>();
         buttonList.add(rectangle);
@@ -69,6 +95,25 @@ public class Whiteboard extends JFrame implements ActionListener {
         JComboBox<String> sizeBox = new JComboBox(new String[] {"XS", "S", "M", "L", "XL"});
         sizeBox.setSelectedItem("M");
         sizeBox.setPreferredSize(new Dimension(70, 60));
+        sizeBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComboBox<String> comboBox = (JComboBox<String>) e.getSource();
+                String selectedSize = (String) comboBox.getSelectedItem();
+                switch (selectedSize) {
+                    case "XS":
+                        board.setCurrentStroke(xs); break;
+                    case "S":
+                        board.setCurrentStroke(s); break;
+                    case "M":
+                        board.setCurrentStroke(m); break;
+                    case "L":
+                        board.setCurrentStroke(l); break;
+                    case "XL":
+                        board.setCurrentStroke(xl); break;
+                }
+            }
+        });
 
         buttonPane.add(sizeLabel);
         buttonPane.add(sizeBox);
@@ -89,6 +134,7 @@ public class Whiteboard extends JFrame implements ActionListener {
                 Color chosenColor = JColorChooser.showDialog(null, "Choose a color", colorDisplay.getBackground());
                 if (chosenColor != null) {
                     colorDisplay.setBackground(chosenColor);
+                    board.setCurrentColor(chosenColor);
                 }
             }
         });
@@ -120,14 +166,6 @@ public class Whiteboard extends JFrame implements ActionListener {
         buttonPane.add(chatBox);
         buttonPane.setBounds(22, 6, 1050, 75);
         contentPane.add(buttonPane);
-
-//        getContentPane().add(buttonPane, BorderLayout.NORTH);
-
-        Board board = new Board();
-        board.setBounds(25, 85, 1050, 640);
-        board.setBackground(Color.white);
-//        getContentPane().add(board, BorderLayout.CENTER);
-        contentPane.add(board);
 
     }
 
