@@ -4,6 +4,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import static java.awt.Font.getFont;
+
 public class Admin extends UnicastRemoteObject implements IWhiteboard {
     public void consoleLog(String s) {
         System.out.println(s);
@@ -22,6 +24,17 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
 
     @Override
     public void addShape(Shape shape, Color color, float stroke) throws RemoteException {
+        gui.board.shapes.add(shape);
+        gui.board.shapeColors.add(color);
+        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.repaint();
+    }
+
+    @Override
+    public void addText(String text, int x, int y, Color color, float stroke) {
+        int fontSize = (int) stroke * 4;
+        Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
+        TextShape shape = new TextShape(text, x, y, textFont);
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
         gui.board.shapeStrokes.add(new BasicStroke(stroke));

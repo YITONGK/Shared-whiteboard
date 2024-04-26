@@ -66,7 +66,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             if (text != null && !text.isEmpty()) {
                 // Calculate font size based on stroke width
                 int fontSize = (int) currentStroke.getLineWidth() * 4;  // Example scaling factor
-                Font textFont = getFont().deriveFont((float) fontSize);
+                Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
                 FontMetrics metrics = getFontMetrics(textFont);
                 int x = e.getX();
                 int y = e.getY() - metrics.getHeight() / 2 + metrics.getAscent();  // Adjust to center text vertically around the click point
@@ -75,6 +75,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
                 shapes.add(textShape);
                 shapeColors.add(currentColor);
                 shapeStrokes.add(currentStroke);  // This might not be necessary unless you want to keep track of strokes for text for some reason
+                notifyTextDrawn(text, x, y, currentColor, currentStroke.getLineWidth());
                 repaint();
             }
         }
@@ -154,9 +155,11 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
                     shapeStrokes.add(new BasicStroke(currentStroke.getLineWidth(), // Keep the line width
                             BasicStroke.CAP_ROUND,  // Round caps for a smoother erase
                             BasicStroke.JOIN_ROUND)); // Round joins for smoother erase
+                    notifyShapeDrawn(line, Color.WHITE, currentStroke.getLineWidth());
                 } else {
                     shapeColors.add(currentColor); // Regular drawing color
                     shapeStrokes.add(currentStroke); // Regular stroke
+                    notifyShapeDrawn(line, currentColor, currentStroke.getLineWidth());
                 }
             }
             dragEnd = newPoint; // Update dragEnd to the new point
@@ -267,5 +270,12 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             drawingListener.shapeDrawn(shape, color, stroke);
         }
     }
+
+    private void notifyTextDrawn(String text, int x, int y, Color color, float stroke) {
+        for (DrawingListener drawingListener : drawingListeners) {
+            drawingListener.textDrawn(text, x, y, color, stroke);
+        }
+    }
+
 
 }
