@@ -20,6 +20,8 @@ public class GUI extends JFrame implements ActionListener {
     private final BasicStroke l = new BasicStroke(16);
     private final BasicStroke xl = new BasicStroke(20);
 
+    public Board board;
+
 
 
 
@@ -31,7 +33,7 @@ public class GUI extends JFrame implements ActionListener {
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
-        Board board = new Board();
+        board = new Board();
         board.setBounds(25, 85, 1050, 640);
         board.setBackground(Color.white);
         contentPane.add(board);

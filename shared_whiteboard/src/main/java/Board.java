@@ -17,25 +17,23 @@ import java.util.ArrayList;
 
 public class Board extends JPanel implements MouseListener, MouseMotionListener {
 
-    private Boolean flag = true;
     public void consoleLog(String s) {
-        if (flag) {
-            System.out.println(s);
-        }
+        System.out.println(s);
     }
 
     public enum Mode {
         RECTANGLE, CIRCLE, OVAL, LINE, DRAW, TEXT, ERASER
     }
 
+    private List<DrawingListener> drawingListeners = new ArrayList<>();
 
     private Mode currentMode = Mode.DRAW;
 
     private Color currentColor = Color.BLACK;
     private BasicStroke currentStroke = new BasicStroke(12);;
-    private List<Shape> shapes = new ArrayList<>();
-    private List<Color> shapeColors = new ArrayList<>();
-    private List<BasicStroke> shapeStrokes = new ArrayList<>();
+    public List<Shape> shapes = new ArrayList<>();
+    public List<Color> shapeColors = new ArrayList<>();
+    public List<BasicStroke> shapeStrokes = new ArrayList<>();
 
     private Point dragStart;
 
@@ -96,6 +94,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             shapes.add(shape);
             shapeColors.add(currentColor);
             shapeStrokes.add(currentStroke);
+            notifyShapeDrawn(shape, currentColor, currentStroke.getLineWidth());
         }
         repaint();
     }
@@ -257,6 +256,16 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     public void setBackgroundImage(File file) throws IOException {
         background = ImageIO.read(file);
         repaint();
+    }
+
+    public void addDrawingListener(DrawingListener drawingListener) {
+        drawingListeners.add(drawingListener);
+    }
+
+    private void notifyShapeDrawn(Shape shape, Color color, float stroke) {
+        for (DrawingListener drawingListener : drawingListeners) {
+            drawingListener.shapeDrawn(shape, color, stroke);
+        }
     }
 
 }
