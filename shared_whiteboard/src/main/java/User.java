@@ -1,5 +1,8 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
-import java.io.Serializable;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -71,11 +74,20 @@ public class User extends UnicastRemoteObject implements IUser{
             }
             @Override
             public void clearBoard() {}
+
+            @Override
+            public void updateBackground(byte[] background) {
+
+            }
         });
         try {
             gui.board.shapes = userBoard.getShapes();
             gui.board.shapeColors = userBoard.getShapeColors();
             gui.board.shapeStrokes = userBoard.getShapeStrokes();
+            if (userBoard.getBackgroundImage() != null) {
+                ByteArrayInputStream bg = new ByteArrayInputStream(userBoard.getBackgroundImage());
+                gui.board.setBackgroundFile(ImageIO.read(bg));
+            }
             gui.board.repaint();
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,6 +117,20 @@ public class User extends UnicastRemoteObject implements IUser{
         gui.board.shapes.clear();
         gui.board.shapeColors.clear();
         gui.board.shapeStrokes.clear();
+        gui.board.setBackgroundFile((BufferedImage) null);
+        gui.board.setBackground(Color.WHITE);
         gui.board.repaint();
+    }
+
+    @Override
+    public void setBackground(byte[] background) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(background);
+            gui.board.setBackgroundFile(ImageIO.read(bais));
+            gui.board.repaint();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

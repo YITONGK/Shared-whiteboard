@@ -9,6 +9,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +31,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     private Mode currentMode = Mode.DRAW;
 
     private Color currentColor = Color.BLACK;
-    private BasicStroke currentStroke = new BasicStroke(12);;
+    private BasicStroke currentStroke = new BasicStroke(12);
     public List<Shape> shapes = new ArrayList<>();
     public List<Color> shapeColors = new ArrayList<>();
     public List<Float> shapeStrokes = new ArrayList<>();
@@ -38,6 +39,15 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     private Point dragStart;
 
     private Point dragEnd;
+
+    public void setBackgroundFile(BufferedImage background) {
+        this.background = background;
+    }
+
+    public BufferedImage getBackgroundFile() {
+        return background;
+    }
+
     private BufferedImage background;
 
     public Board() {
@@ -260,6 +270,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     public void setBackgroundImage(File file) throws IOException {
         background = ImageIO.read(file);
         repaint();
+        notifyBackground(background);
     }
 
     public void setDrawingListener(DrawingListener drawingListener) {
@@ -275,9 +286,23 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     }
 
     private void notifyClear() {
-        consoleLog("notify clear");
         drawingListener.clearBoard();
     }
+
+    private void notifyBackground(BufferedImage background) {
+        try {
+            drawingListener.updateBackground(serializeImage(background));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] serializeImage(BufferedImage image) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        return baos.toByteArray();
+    }
+
 
 
 }

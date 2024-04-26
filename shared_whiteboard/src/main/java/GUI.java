@@ -61,6 +61,7 @@ public class GUI extends JFrame implements ActionListener {
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
                     try {
+                        board.clearBoard();
                         board.setBackgroundImage(selectedFile);
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(this, "Error loading image: " + ex.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);

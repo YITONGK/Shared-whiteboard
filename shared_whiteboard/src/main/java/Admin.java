@@ -1,9 +1,11 @@
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +56,15 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
                 consoleLog("clearBoard in admin");
                 try {
                     broadcastClear();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void updateBackground(byte[] background) {
+                try {
+                    broadcastBackground(background);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -124,6 +135,18 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
+    public void broadcastBackground(byte[] background) throws RemoteException {
+        try {
+            for (String user: userList) {
+                IUser u = (IUser) registry.lookup(user);
+                u.setBackground(background);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public String addUser(String username) throws RemoteException {
         if (!userList.contains(username)) {
             userList.add(username);
@@ -162,6 +185,18 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     @Override
     public List<Float> getShapeStrokes() throws RemoteException {
         return gui.board.shapeStrokes;
+    }
+
+    @Override
+    public byte[] getBackgroundImage() throws RemoteException {
+        try {
+            if (gui.board.getBackgroundFile() != null) {
+                return gui.board.serializeImage(gui.board.getBackgroundFile());
+            }
+            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void main(String[] args) {
