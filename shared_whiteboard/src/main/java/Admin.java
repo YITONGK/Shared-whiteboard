@@ -57,7 +57,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     public void addShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
-        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.shapeStrokes.add(stroke);
         gui.board.repaint();
         broadcastShape(userId, shape, color, stroke);
     }
@@ -69,7 +69,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         TextShape shape = new TextShape(text, x, y, textFont);
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
-        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.shapeStrokes.add(stroke);
         gui.board.repaint();
         broadcastText(userId, text, x, y, color, stroke);
     }
@@ -144,7 +144,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
-    public List<BasicStroke> getShapeStrokes() throws RemoteException {
+    public List<Float> getShapeStrokes() throws RemoteException {
         return gui.board.shapeStrokes;
     }
 

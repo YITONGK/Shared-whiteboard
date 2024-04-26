@@ -33,7 +33,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     private BasicStroke currentStroke = new BasicStroke(12);;
     public List<Shape> shapes = new ArrayList<>();
     public List<Color> shapeColors = new ArrayList<>();
-    public List<BasicStroke> shapeStrokes = new ArrayList<>();
+    public List<Float> shapeStrokes = new ArrayList<>();
 
     private Point dragStart;
 
@@ -74,7 +74,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
                 TextShape textShape = new TextShape(text, x, y, textFont);
                 shapes.add(textShape);
                 shapeColors.add(currentColor);
-                shapeStrokes.add(currentStroke);  // This might not be necessary unless you want to keep track of strokes for text for some reason
+                shapeStrokes.add(currentStroke.getLineWidth());  // This might not be necessary unless you want to keep track of strokes for text for some reason
                 notifyTextDrawn(text, x, y, currentColor, currentStroke.getLineWidth());
                 repaint();
             }
@@ -94,7 +94,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         if (shape != null) {
             shapes.add(shape);
             shapeColors.add(currentColor);
-            shapeStrokes.add(currentStroke);
+            shapeStrokes.add(currentStroke.getLineWidth());
             notifyShapeDrawn(shape, currentColor, currentStroke.getLineWidth());
         }
         repaint();
@@ -154,11 +154,11 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
                     shapeColors.add(Color.WHITE);  // Assuming the background is white
                     shapeStrokes.add(new BasicStroke(currentStroke.getLineWidth(), // Keep the line width
                             BasicStroke.CAP_ROUND,  // Round caps for a smoother erase
-                            BasicStroke.JOIN_ROUND)); // Round joins for smoother erase
+                            BasicStroke.JOIN_ROUND).getLineWidth()); // Round joins for smoother erase
                     notifyShapeDrawn(line, Color.WHITE, currentStroke.getLineWidth());
                 } else {
                     shapeColors.add(currentColor); // Regular drawing color
-                    shapeStrokes.add(currentStroke); // Regular stroke
+                    shapeStrokes.add(currentStroke.getLineWidth()); // Regular stroke
                     notifyShapeDrawn(line, currentColor, currentStroke.getLineWidth());
                 }
             }
@@ -188,7 +188,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         }
         for (int i = 0; i < shapes.size(); i++) {
             g2d.setColor(shapeColors.get(i));
-            g2d.setStroke(shapeStrokes.get(i));
+            g2d.setStroke(new BasicStroke(shapeStrokes.get(i)));
             Shape shape = shapes.get(i);
             if (shape instanceof TextShape) {
                 TextShape textShape = (TextShape) shape;

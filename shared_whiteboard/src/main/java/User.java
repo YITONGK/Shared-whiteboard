@@ -84,7 +84,7 @@ public class User extends UnicastRemoteObject implements IUser{
     public void addShape(Shape shape, Color color, float stroke) throws RemoteException {
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
-        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.shapeStrokes.add(stroke);
         gui.board.repaint();
     }
 
@@ -94,7 +94,7 @@ public class User extends UnicastRemoteObject implements IUser{
         TextShape shape = new TextShape(text, x, y, textFont);
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
-        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.shapeStrokes.add(stroke);
         gui.board.repaint();
     }
 }

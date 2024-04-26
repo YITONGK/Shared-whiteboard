@@ -15,5 +15,5 @@ public interface IWhiteboard extends Remote {
     void testConnection() throws RemoteException;
     List<Shape> getShapes() throws RemoteException;
     List<Color> getShapeColors() throws RemoteException;
-    List<BasicStroke> getShapeStrokes() throws RemoteException;
+    List<Float> getShapeStrokes() throws RemoteException;
 }
