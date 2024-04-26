@@ -1,3 +1,3 @@
-java -jar /Users/felikskong/Desktop/Shared-whiteboard/shared_whiteboard/out/artifacts/A/shared_whiteboard.jar
+java -jar /Users/felikskong/Desktop/Shared-whiteboard/shared_whiteboard/out/artifacts/A/shared_whiteboard.jar 1234 Admin
 
-java -jar /Users/felikskong/Desktop/Shared-whiteboard/shared_whiteboard/out/artifacts/U/shared_whiteboard.jar
+java -jar /Users/felikskong/Desktop/Shared-whiteboard/shared_whiteboard/out/artifacts/U/shared_whiteboard.jar localhost 1234 Feliks

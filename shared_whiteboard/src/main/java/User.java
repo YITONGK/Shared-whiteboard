@@ -1,22 +1,25 @@
 import java.awt.*;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.ExportException;
+import java.rmi.server.UnicastRemoteObject;
 
-public class User {
+public class User extends UnicastRemoteObject implements IUser{
 
     public void consoleLog(String s) {
         System.out.println(s);
     }
     private IWhiteboard userBoard;
     private GUI gui;
+    private String userId;
 
-    public User() {
+    public User(String ip, int port, String username) throws RemoteException {
         try {
-            Registry registry = LocateRegistry.getRegistry("localhost", 1234);
+            Registry registry = LocateRegistry.getRegistry(ip, port);
             userBoard = (IWhiteboard) registry.lookup("Whiteboard");
+            userId = userBoard.addUser(username);
+            registry.bind(userId, this);
             setUpGUI();
         } catch (Exception e) {
             consoleLog("connection failed");
@@ -24,13 +27,16 @@ public class User {
         }
     }
 
-    public static void main(String[] args) {
-        User user = new User();
+    public static void main(String[] args) throws RemoteException{
+        if (args.length == 3) {
+            User user = new User(args[0], Integer.parseInt(args[1]), args[2]);
+        }
+
     }
 
     public void requestAddShape(Shape shape, Color color, float stroke) {
         try {
-            userBoard.addShape(shape, color, stroke);
+            userBoard.addShape(userId, shape, color, stroke);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -38,7 +44,7 @@ public class User {
 
     public void requestAddText(String text, int x, int y, Color color, float stroke) {
         try {
-            userBoard.addText(text, x, y, color, stroke);
+            userBoard.addText(userId, text, x, y, color, stroke);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,5 +70,24 @@ public class User {
                 requestAddText(text, x, y, color, stroke);
             }
         });
+    }
+
+    @Override
+    public void addShape(Shape shape, Color color, float stroke) throws RemoteException {
+        gui.board.shapes.add(shape);
+        gui.board.shapeColors.add(color);
+        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.repaint();
+    }
+
+    @Override
+    public void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
+        int fontSize = (int) stroke * 4;
+        Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
+        TextShape shape = new TextShape(text, x, y, textFont);
+        gui.board.shapes.add(shape);
+        gui.board.shapeColors.add(color);
+        gui.board.shapeStrokes.add(new BasicStroke(stroke));
+        gui.board.repaint();
     }
 }

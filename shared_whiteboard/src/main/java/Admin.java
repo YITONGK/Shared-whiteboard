@@ -3,8 +3,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.PreparedStatement;
+import java.util.ArrayList;
+import java.util.List;
 
-import static java.awt.Font.getFont;
 
 public class Admin extends UnicastRemoteObject implements IWhiteboard {
     public void consoleLog(String s) {
@@ -12,10 +14,17 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     public GUI gui;
+    private List<String> userList = new ArrayList<>();
+
+    private String adminName;
+    private Registry registry;
 
 
-    public Admin() throws RemoteException {
+
+    public Admin(String adminName, Registry registry) throws RemoteException {
         super();
+        this.adminName = adminName;
+        this.registry = registry;
         gui = new GUI(true);
         gui.setVisible(true);
         gui.setSize(1100,800);
@@ -23,15 +32,16 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
 
 
     @Override
-    public void addShape(Shape shape, Color color, float stroke) throws RemoteException {
+    public void addShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
         gui.board.shapeStrokes.add(new BasicStroke(stroke));
         gui.board.repaint();
+        broadcastShape(userId, shape, color, stroke);
     }
 
     @Override
-    public void addText(String text, int x, int y, Color color, float stroke) {
+    public void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
         int fontSize = (int) stroke * 4;
         Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
         TextShape shape = new TextShape(text, x, y, textFont);
@@ -39,6 +49,35 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         gui.board.shapeColors.add(color);
         gui.board.shapeStrokes.add(new BasicStroke(stroke));
         gui.board.repaint();
+        broadcastText(userId, text, x, y, color, stroke);
+    }
+
+    @Override
+    public void broadcastShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
+        try {
+            for (String user: userList) {
+                if (!user.equals(userId)) {
+                    IUser u = (IUser) registry.lookup(user);
+                    u.addShape(shape, color, stroke);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void broadcastText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
+        try {
+            for (String user: userList) {
+                if (!user.equals(userId)) {
+                    IUser u = (IUser) registry.lookup(user);
+                    u.addText(userId, text, x, y, color, stroke);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -47,8 +86,19 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
-    public void addUser(String username) throws RemoteException {
-
+    public String addUser(String username) throws RemoteException {
+        if (!userList.contains(username)) {
+            userList.add(username);
+            return username;
+        }
+        else {
+            for (int i = 1; true; i ++) {
+                if (!userList.contains(username + "(" + i + ")")) {
+                    userList.add(username + "(" + i + ")");
+                    return username + "(" + i + ")";
+                }
+            }
+        }
     }
 
     @Override
@@ -61,10 +111,11 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     public static void main(String[] args) {
+        int port = Integer.parseInt(args[0]);
+        String username = args[1];
         try {
-            IWhiteboard adminBoard = new Admin();
-            System.out.println(adminBoard.toString());
-            Registry registry = LocateRegistry.createRegistry(1234);
+            Registry registry = LocateRegistry.createRegistry(port);
+            IWhiteboard adminBoard = new Admin(username, registry);
             registry.bind("Whiteboard", adminBoard);
             System.out.println("Admin starts");
         } catch (Exception e) {

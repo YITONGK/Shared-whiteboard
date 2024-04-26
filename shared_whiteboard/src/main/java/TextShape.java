@@ -5,9 +5,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 
-public class TextShape implements Shape, Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class TextShape implements Shape {
 
     private String text;
     private int x;
