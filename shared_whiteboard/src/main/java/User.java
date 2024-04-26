@@ -20,7 +20,7 @@ public class User extends UnicastRemoteObject implements IUser{
             userBoard = (IWhiteboard) registry.lookup("Whiteboard");
             userId = userBoard.addUser(username);
             registry.bind(userId, this);
-            setUpGUI();
+            setUpGUI(userBoard);
         } catch (Exception e) {
             consoleLog("connection failed");
             e.printStackTrace();
@@ -51,14 +51,14 @@ public class User extends UnicastRemoteObject implements IUser{
     }
 
 
-    public void setUpGUI() {
+    public void setUpGUI(IWhiteboard userBoard) {
         gui = new GUI(false);
         gui.setVisible(true);
         gui.setSize(1100, 800);
-        setupGUIInteraction();
+        setupGUIInteraction(userBoard);
     }
 
-    public void setupGUIInteraction() {
+    public void setupGUIInteraction(IWhiteboard userBoard) {
         gui.board.addDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {
@@ -70,6 +70,14 @@ public class User extends UnicastRemoteObject implements IUser{
                 requestAddText(text, x, y, color, stroke);
             }
         });
+        try {
+            gui.board.shapes = userBoard.getShapes();
+            gui.board.shapeColors = userBoard.getShapeColors();
+            gui.board.shapeStrokes = userBoard.getShapeStrokes();
+            gui.board.repaint();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -82,8 +90,7 @@ public class User extends UnicastRemoteObject implements IUser{
 
     @Override
     public void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
-        int fontSize = (int) stroke * 4;
-        Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
+        Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont(stroke * 4);
         TextShape shape = new TextShape(text, x, y, textFont);
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);

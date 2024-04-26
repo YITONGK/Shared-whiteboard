@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface IWhiteboard extends Remote {
     void addShape(String userid, Shape shape, Color color, float stroke) throws RemoteException;
@@ -12,4 +13,7 @@ public interface IWhiteboard extends Remote {
     void removeUser(String username) throws RemoteException;
 
     void testConnection() throws RemoteException;
+    List<Shape> getShapes() throws RemoteException;
+    List<Color> getShapeColors() throws RemoteException;
+    List<BasicStroke> getShapeStrokes() throws RemoteException;
 }

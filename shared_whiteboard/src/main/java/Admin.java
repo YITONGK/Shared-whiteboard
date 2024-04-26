@@ -28,6 +28,28 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         gui = new GUI(true);
         gui.setVisible(true);
         gui.setSize(1100,800);
+        setupGUIInteraction();
+    }
+
+    public void setupGUIInteraction() {
+        gui.board.addDrawingListener(new DrawingListener() {
+            @Override
+            public void shapeDrawn(Shape shape, Color color, float stroke) {
+                try {
+                    broadcastShape("admin" ,shape, color, stroke);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void textDrawn(String text, int x, int y, Color color, float stroke) {
+                try {
+                    broadcastText("admin", text, x, y, color, stroke);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
 
@@ -106,8 +128,24 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
 
     }
 
+    @Override
     public void testConnection() {
         consoleLog("hello user");
+    }
+
+    @Override
+    public List<Shape> getShapes() throws RemoteException {
+        return gui.board.shapes;
+    }
+
+    @Override
+    public List<Color> getShapeColors() throws RemoteException {
+        return gui.board.shapeColors;
+    }
+
+    @Override
+    public List<BasicStroke> getShapeStrokes() throws RemoteException {
+        return gui.board.shapeStrokes;
     }
 
     public static void main(String[] args) {
