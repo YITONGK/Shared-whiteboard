@@ -59,7 +59,7 @@ public class User extends UnicastRemoteObject implements IUser{
     }
 
     public void setupGUIInteraction(IWhiteboard userBoard) {
-        gui.board.addDrawingListener(new DrawingListener() {
+        gui.board.setDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {
                 requestAddShape(shape, color, stroke);
@@ -69,6 +69,8 @@ public class User extends UnicastRemoteObject implements IUser{
             public void textDrawn(String text, int x, int y, Color color, float stroke) {
                 requestAddText(text, x, y, color, stroke);
             }
+            @Override
+            public void clearBoard() {}
         });
         try {
             gui.board.shapes = userBoard.getShapes();
@@ -95,6 +97,14 @@ public class User extends UnicastRemoteObject implements IUser{
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
         gui.board.shapeStrokes.add(stroke);
+        gui.board.repaint();
+    }
+
+    @Override
+    public void clearBoard() {
+        gui.board.shapes.clear();
+        gui.board.shapeColors.clear();
+        gui.board.shapeStrokes.clear();
         gui.board.repaint();
     }
 }

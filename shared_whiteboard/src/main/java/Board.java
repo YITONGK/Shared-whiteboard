@@ -25,7 +25,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         RECTANGLE, CIRCLE, OVAL, LINE, DRAW, TEXT, ERASER
     }
 
-    private List<DrawingListener> drawingListeners = new ArrayList<>();
+    private DrawingListener drawingListener;
 
     private Mode currentMode = Mode.DRAW;
 
@@ -245,7 +245,8 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         background =null;
         setBackground(Color.WHITE);
         repaint();
-
+        consoleLog("repaint in board");
+        notifyClear();
     }
 
     public void saveAsPng(File file) throws IOException {
@@ -261,20 +262,21 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         repaint();
     }
 
-    public void addDrawingListener(DrawingListener drawingListener) {
-        drawingListeners.add(drawingListener);
+    public void setDrawingListener(DrawingListener drawingListener) {
+        this.drawingListener = drawingListener;
     }
 
     private void notifyShapeDrawn(Shape shape, Color color, float stroke) {
-        for (DrawingListener drawingListener : drawingListeners) {
-            drawingListener.shapeDrawn(shape, color, stroke);
-        }
+        drawingListener.shapeDrawn(shape, color, stroke);
     }
 
     private void notifyTextDrawn(String text, int x, int y, Color color, float stroke) {
-        for (DrawingListener drawingListener : drawingListeners) {
-            drawingListener.textDrawn(text, x, y, color, stroke);
-        }
+        drawingListener.textDrawn(text, x, y, color, stroke);
+    }
+
+    private void notifyClear() {
+        consoleLog("notify clear");
+        drawingListener.clearBoard();
     }
 
 

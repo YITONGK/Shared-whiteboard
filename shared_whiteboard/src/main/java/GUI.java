@@ -47,6 +47,7 @@ public class GUI extends JFrame implements ActionListener {
             menuBar.add(fileMenu);
             JMenuItem newFile = new JMenuItem("New");
             newFile.addActionListener(e -> {
+                consoleLog("New in GUI");
                 board.clearBoard();
             });
             JMenuItem openFile = new JMenuItem("Open");

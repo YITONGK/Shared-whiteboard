@@ -32,7 +32,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     public void setupGUIInteraction() {
-        gui.board.addDrawingListener(new DrawingListener() {
+        gui.board.setDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {
                 try {
@@ -45,6 +45,15 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
             public void textDrawn(String text, int x, int y, Color color, float stroke) {
                 try {
                     broadcastText("admin", text, x, y, color, stroke);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void clearBoard() {
+                consoleLog("clearBoard in admin");
+                try {
+                    broadcastClear();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -103,8 +112,15 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
-    public void clearBoard() throws RemoteException {
-
+    public void broadcastClear() {
+        try {
+            for (String user: userList) {
+                IUser u = (IUser) registry.lookup(user);
+                u.clearBoard();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
