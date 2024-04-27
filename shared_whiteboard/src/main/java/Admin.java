@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
@@ -23,17 +25,27 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     private final String adminName;
     private Registry registry;
 
-    public Admin(String adminName, Registry registry) throws RemoteException {
+    public Admin(String ip, int port, String adminName, Registry registry) throws RemoteException {
         super();
         this.adminName = adminName;
         this.registry = registry;
-        gui = new GUI(true);
+        gui = new GUI(true, "", this);
         gui.setVisible(true);
         gui.setSize(1100,800);
         setupGUIInteraction();
     }
 
     public void setupGUIInteraction() {
+        gui.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    broadcastAdminExit();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
         gui.board.setDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {
@@ -178,9 +190,22 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
+    public void broadcastAdminExit() throws RemoteException {
+        try {
+            for (String user: userList) {
+                IUser u = (IUser) registry.lookup(user);
+                u.showAdminExit();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void addUser(String username) throws RemoteException {
         userList.add(username);
         updateUserListWindow(adminName, userList);
+        updateUserOnlyList(username);
     }
 
     @Override
@@ -195,14 +220,37 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
+    public void kickOutUser(String userId) throws RemoteException {
+        userList.remove(userId);
+        updateUserListWindow(adminName, userList);
+        try {
+            IUser userKicked = (IUser) registry.lookup(userId);
+            userKicked.exitApplication();
+            registry.unbind(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void updateUserListWindow(String adminName, List<String> userList) throws RemoteException {
         gui.userListWindow.updateUserList(adminName, userList);
         broadcastUserList(adminName, userList);
     }
 
     @Override
+    public void updateUserOnlyList(String newUser) throws RemoteException {
+        gui.adminManagement.addNewUser(newUser);
+    }
+
+    @Override
     public List<String> getUserList() {
         return userList;
+    }
+
+    @Override
+    public String getAdminName() {
+        return adminName;
     }
 
     @Override
@@ -239,11 +287,12 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
 
 
     public static void main(String[] args) {
-        int port = Integer.parseInt(args[0]);
-        String adminName = args[1];
+        String ip = args[0];
+        int port = Integer.parseInt(args[1]);
+        String adminName = args[2];
         try {
             Registry registry = LocateRegistry.createRegistry(port);
-            IWhiteboard adminBoard = new Admin(adminName, registry);
+            IWhiteboard adminBoard = new Admin(ip, port, adminName, registry);
             adminBoard.updateUserListWindow(adminName, new ArrayList<>());
             registry.bind("Whiteboard", adminBoard);
             System.out.println("Admin starts");

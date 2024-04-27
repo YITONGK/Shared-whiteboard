@@ -9,9 +9,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class User extends UnicastRemoteObject implements IUser{
 
@@ -21,24 +18,6 @@ public class User extends UnicastRemoteObject implements IUser{
     private IWhiteboard userBoard;
     private GUI gui;
     private String userId;
-
-//    public User(String ip, int port, String username) throws RemoteException {
-//        try {
-//            Registry registry = LocateRegistry.getRegistry(ip, port);
-//            userBoard = (IWhiteboard) registry.lookup("Whiteboard");
-//            userId = getUserId(username, userBoard.getUserList());
-//            boolean isApproved = userBoard.requestJoin(userId);
-//            if (!isApproved) {
-//                throw new RemoteException("Connection denied by admin.");
-//            }
-//            registry.bind(userId, this);
-//            setUpGUI(userBoard);
-//            userBoard.addUser(userId);
-//        } catch (Exception e) {
-//            consoleLog("connection failed");
-//            e.printStackTrace();
-//        }
-//    }
 
     public User(String ip, int port, String username) throws RemoteException {
         super();
@@ -53,7 +32,7 @@ public class User extends UnicastRemoteObject implements IUser{
             }
 
             registry.bind(userId, this);
-            setUpGUI(userBoard);
+            setUpGUI(userBoard, ip, port);
             userBoard.addUser(userId);
         } catch (Exception e) {
             consoleLog("Connection failed: " + e.getMessage());
@@ -101,16 +80,17 @@ public class User extends UnicastRemoteObject implements IUser{
     }
 
 
-    public void setUpGUI(IWhiteboard userBoard) {
-        gui = new GUI(false);
+    public void setUpGUI(IWhiteboard userBoard, String ip, int port) {
+        try {
+            gui = new GUI(false, userBoard.getAdminName(), null);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
         gui.setVisible(true);
         gui.setSize(1100, 800);
         setupGUIInteraction(userBoard);
     }
 
-    public void logout() {
-
-    }
 
     public void setupGUIInteraction(IWhiteboard userBoard) {
         gui.addWindowListener(new WindowAdapter() {
@@ -122,11 +102,7 @@ public class User extends UnicastRemoteObject implements IUser{
                     ex.printStackTrace();
                 }
             }
-        }
-
-
-
-        );
+        });
         gui.board.setDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {
@@ -210,5 +186,29 @@ public class User extends UnicastRemoteObject implements IUser{
     @Override
     public void updateUserList(String adminName, List<String> userList) throws RemoteException {
         gui.userListWindow.updateUserList(adminName, userList);
+    }
+
+    @Override
+    public void exitApplication() throws RemoteException {
+        clearBoard();
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(null,
+                    "You are kicked out by the admin.",
+                    "Kicked Out",
+                    JOptionPane.WARNING_MESSAGE);
+            System.exit(0);
+        });
+    }
+
+    @Override
+    public void showAdminExit() throws RemoteException {
+        clearBoard();
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(null,
+                    "The admin shut down the system",
+                    "Admin Exits",
+                    JOptionPane.WARNING_MESSAGE);
+            System.exit(0);
+        });
     }
 }

@@ -6,6 +6,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +30,12 @@ public class GUI extends JFrame implements ActionListener {
 
     public ChatWindow chatWindow = new ChatWindow(GUI.this);
 
-    public GUI(Boolean isAdmin) {
+    public AdminManagement adminManagement;
+    private String adminName;
 
+    public GUI(Boolean isAdmin, String adminName, IWhiteboard admin) {
+
+        this.adminName = adminName;
 
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -114,10 +122,18 @@ public class GUI extends JFrame implements ActionListener {
             fileMenu.add(save);
             fileMenu.add(saveAs);
             fileMenu.add(exit);
-            JMenu manage = new JMenu("Manage");
-            menuBar.add(manage);
+            JMenu manageMenu = new JMenu("Manage");
+            JMenuItem manageUsers = new JMenuItem("Kick out users");
+            manageMenu.add(manageUsers);
+
+            adminManagement = new AdminManagement(GUI.this, "Kick out users", true, admin);
+            manageUsers.addActionListener(e -> {
+                adminManagement.setVisible(true);
+            });
+
+            menuBar.add(manageMenu);
         } else {
-            JMenu welcome = new JMenu("'s whiteboard");
+            JMenu welcome = new JMenu(adminName + "'s whiteboard");
             menuBar.add(welcome);
         }
 
@@ -239,13 +255,5 @@ public class GUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
     }
-
-
-    public static void main(String[] args) {
-        GUI gui = new GUI(true);
-        gui.setVisible(true);
-        gui.setSize(1100,800);
-    }
-
 
 }
