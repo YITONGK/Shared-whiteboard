@@ -10,7 +10,9 @@ public interface IUser extends Remote {
     void clearBoard() throws RemoteException;
     void setBackground(byte[] background) throws RemoteException;
     void updateUserList(String adminName, List<String> userList) throws RemoteException;
+    void updateChatBox(String message) throws RemoteException;
     void exitApplication() throws RemoteException;
     void showAdminExit() throws RemoteException;
+    void loadChatHistory(List<String> messages) throws RemoteException;
 
 }

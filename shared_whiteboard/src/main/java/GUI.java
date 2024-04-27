@@ -6,10 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,16 +23,13 @@ public class GUI extends JFrame implements ActionListener {
 
     public Board board;
 
-    public UserListWindow userListWindow = new UserListWindow(GUI.this);
+    public UserListWindow userListWindow;
 
-    public ChatWindow chatWindow = new ChatWindow(GUI.this);
+    public ChatWindow chatWindow;
 
     public AdminManagement adminManagement;
-    private String adminName;
 
-    public GUI(Boolean isAdmin, String adminName, IWhiteboard admin) {
-
-        this.adminName = adminName;
+    public GUI(Boolean isAdmin, String adminName, String userId, IWhiteboard admin) {
 
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -112,6 +106,11 @@ public class GUI extends JFrame implements ActionListener {
                 );
 
                 if (confirmed == JOptionPane.YES_OPTION) {
+                    try {
+                        admin.broadcastAdminExit();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                     // Perform any cleanup operations you need here
                     dispose(); // Dispose all resources and close the application window
                     System.exit(0); // Ensure JVM is properly closed
@@ -229,6 +228,7 @@ public class GUI extends JFrame implements ActionListener {
 
         JButton userList = new JButton("User list");
         userList.setPreferredSize(new Dimension(100, 40));
+        userListWindow = new UserListWindow(GUI.this);
         userList.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -237,6 +237,7 @@ public class GUI extends JFrame implements ActionListener {
         });
         JButton chatBox = new JButton("Chat Box");
         chatBox.setPreferredSize(new Dimension(100, 40));
+        chatWindow = new ChatWindow(GUI.this, userId, admin);
         chatBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

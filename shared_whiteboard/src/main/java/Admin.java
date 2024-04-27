@@ -21,15 +21,15 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
 
     public GUI gui;
     private List<String> userList = new ArrayList<>();
-
+    private List<String> messages = new ArrayList<>();
     private final String adminName;
     private Registry registry;
 
-    public Admin(String ip, int port, String adminName, Registry registry) throws RemoteException {
+    public Admin(String adminName, Registry registry) throws RemoteException {
         super();
         this.adminName = adminName;
         this.registry = registry;
-        gui = new GUI(true, "", this);
+        gui = new GUI(true, adminName, adminName, this);
         gui.setVisible(true);
         gui.setSize(1100,800);
         setupGUIInteraction();
@@ -190,6 +190,20 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
+    public void broadcastChatMessage(String message) throws RemoteException {
+        messages.add(message);
+        gui.chatWindow.updateChatBox(message);
+        try {
+            for (String user: userList) {
+                IUser u = (IUser) registry.lookup(user);
+                u.updateChatBox(message);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void broadcastAdminExit() throws RemoteException {
         try {
             for (String user: userList) {
@@ -206,6 +220,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         userList.add(username);
         updateUserListWindow(adminName, userList);
         updateUserOnlyList(username);
+        loadHistoryMessage(username, messages);
     }
 
     @Override
@@ -244,6 +259,16 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
+    public void loadHistoryMessage(String userId, List<String> messages) throws RemoteException {
+        try {
+            IUser newUser = (IUser) registry.lookup(userId);
+            newUser.loadChatHistory(messages);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public List<String> getUserList() {
         return userList;
     }
@@ -251,11 +276,6 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     @Override
     public String getAdminName() {
         return adminName;
-    }
-
-    @Override
-    public void testConnection() {
-        consoleLog("hello user");
     }
 
     @Override
@@ -292,7 +312,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         String adminName = args[2];
         try {
             Registry registry = LocateRegistry.createRegistry(port);
-            IWhiteboard adminBoard = new Admin(ip, port, adminName, registry);
+            IWhiteboard adminBoard = new Admin(adminName, registry);
             adminBoard.updateUserListWindow(adminName, new ArrayList<>());
             registry.bind("Whiteboard", adminBoard);
             System.out.println("Admin starts");

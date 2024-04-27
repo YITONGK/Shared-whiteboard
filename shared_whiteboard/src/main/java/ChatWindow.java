@@ -2,13 +2,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChatWindow extends JDialog {
     private JTextArea chatArea;
     private JTextField inputField;
     private JButton sendButton;
 
-    public ChatWindow(Frame owner) {
+    public ChatWindow(Frame owner, String username, IWhiteboard admin) {
         super(owner, "Chat Window", true);
         setSize(400, 300);
         setLocationRelativeTo(owner);
@@ -26,7 +29,14 @@ public class ChatWindow extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!inputField.getText().trim().isEmpty()) {
-                    chatArea.append(inputField.getText() + "\n");
+                    String message = username + ": " + inputField.getText() + "\n";
+//                    chatArea.append(message);
+//                    messages.add(message);
+                    try {
+                        admin.broadcastChatMessage(message);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                     inputField.setText("");
                 }
             }
@@ -35,5 +45,9 @@ public class ChatWindow extends JDialog {
         inputPanel.add(inputField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
         add(inputPanel, BorderLayout.SOUTH);
+    }
+
+    public void updateChatBox(String message) {
+        chatArea.append(message);
     }
 }

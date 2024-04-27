@@ -15,7 +15,7 @@ public class User extends UnicastRemoteObject implements IUser{
     public void consoleLog(String s) {
         System.out.println(s);
     }
-    private IWhiteboard userBoard;
+    private IWhiteboard admin;
     private GUI gui;
     private String userId;
 
@@ -23,17 +23,17 @@ public class User extends UnicastRemoteObject implements IUser{
         super();
         try {
             Registry registry = LocateRegistry.getRegistry(ip, port);
-            userBoard = (IWhiteboard) registry.lookup("Whiteboard");
-            userId = getUserId(username, userBoard.getUserList());
+            admin = (IWhiteboard) registry.lookup("Whiteboard");
+            userId = getUserId(username, admin.getUserList());
 
-            if (!userBoard.requestJoin(userId)) {
+            if (!admin.requestJoin(userId)) {
                 consoleLog("Connection denied by admin.");
                 return;
             }
 
             registry.bind(userId, this);
-            setUpGUI(userBoard, ip, port);
-            userBoard.addUser(userId);
+            setUpGUI(admin, userId);
+            admin.addUser(userId);
         } catch (Exception e) {
             consoleLog("Connection failed: " + e.getMessage());
             e.printStackTrace();
@@ -65,7 +65,7 @@ public class User extends UnicastRemoteObject implements IUser{
 
     public void requestAddShape(Shape shape, Color color, float stroke) {
         try {
-            userBoard.addShape(userId, shape, color, stroke);
+            admin.addShape(userId, shape, color, stroke);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -73,31 +73,31 @@ public class User extends UnicastRemoteObject implements IUser{
 
     public void requestAddText(String text, int x, int y, Color color, float stroke) {
         try {
-            userBoard.addText(userId, text, x, y, color, stroke);
+            admin.addText(userId, text, x, y, color, stroke);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    public void setUpGUI(IWhiteboard userBoard, String ip, int port) {
+    public void setUpGUI(IWhiteboard admin, String userId) {
         try {
-            gui = new GUI(false, userBoard.getAdminName(), null);
+            gui = new GUI(false, admin.getAdminName(), userId, admin);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
         gui.setVisible(true);
         gui.setSize(1100, 800);
-        setupGUIInteraction(userBoard);
+        setupGUIInteraction(admin);
     }
 
 
-    public void setupGUIInteraction(IWhiteboard userBoard) {
+    public void setupGUIInteraction(IWhiteboard admin) {
         gui.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    userBoard.removeUser(userId);
+                    admin.removeUser(userId);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -125,11 +125,11 @@ public class User extends UnicastRemoteObject implements IUser{
 
          });
         try {
-            gui.board.shapes = userBoard.getShapes();
-            gui.board.shapeColors = userBoard.getShapeColors();
-            gui.board.shapeStrokes = userBoard.getShapeStrokes();
-            if (userBoard.getBackgroundImage() != null) {
-                ByteArrayInputStream bg = new ByteArrayInputStream(userBoard.getBackgroundImage());
+            gui.board.shapes = admin.getShapes();
+            gui.board.shapeColors = admin.getShapeColors();
+            gui.board.shapeStrokes = admin.getShapeStrokes();
+            if (admin.getBackgroundImage() != null) {
+                ByteArrayInputStream bg = new ByteArrayInputStream(admin.getBackgroundImage());
                 gui.board.setBackgroundFile(ImageIO.read(bg));
             }
             gui.board.repaint();
@@ -189,6 +189,11 @@ public class User extends UnicastRemoteObject implements IUser{
     }
 
     @Override
+    public void updateChatBox(String message) throws RemoteException {
+        gui.chatWindow.updateChatBox(message);
+    }
+
+    @Override
     public void exitApplication() throws RemoteException {
         clearBoard();
         SwingUtilities.invokeLater(() -> {
@@ -210,5 +215,12 @@ public class User extends UnicastRemoteObject implements IUser{
                     JOptionPane.WARNING_MESSAGE);
             System.exit(0);
         });
+    }
+
+    @Override
+    public void loadChatHistory(List<String> messages) throws RemoteException {
+        for (String message: messages) {
+            gui.chatWindow.updateChatBox(message);
+        }
     }
 }
