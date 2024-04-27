@@ -5,18 +5,19 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 
-public class TextShape implements Shape {
+public class TextShape implements Shape, Serializable{
+    private static final long serialVersionUID = 1L;
 
     private String text;
     private int x;
     private int y;
-    private Font font;
+    private float stroke;
 
-    public TextShape(String text, int x, int y, Font font) {
+    public TextShape(String text, int x, int y, float stroke) {
         this.text = text;
         this.x = x;
         this.y = y;
-        this.font = font;
+        this.stroke = stroke;
     }
 
     public String getText() {
@@ -31,8 +32,8 @@ public class TextShape implements Shape {
         return y;
     }
 
-    public Font getFont() {
-        return font;
+    public float getStroke() {
+        return stroke;
     }
 
     @Override

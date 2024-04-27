@@ -145,8 +145,7 @@ public class User extends UnicastRemoteObject implements IUser{
 
     @Override
     public void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
-        Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont(stroke * 4);
-        TextShape shape = new TextShape(text, x, y, textFont);
+        TextShape shape = new TextShape(text, x, y, stroke);
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
         gui.board.shapeStrokes.add(stroke);

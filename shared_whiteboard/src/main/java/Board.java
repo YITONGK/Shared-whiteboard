@@ -89,7 +89,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
                 int x = e.getX();
                 int y = e.getY() - metrics.getHeight() / 2 + metrics.getAscent();  // Adjust to center text vertically around the click point
 
-                TextShape textShape = new TextShape(text, x, y, textFont);
+                TextShape textShape = new TextShape(text, x, y, currentStroke.getLineWidth());
                 shapes.add(textShape);
                 shapeColors.add(currentColor);
                 shapeStrokes.add(currentStroke.getLineWidth());  // This might not be necessary unless you want to keep track of strokes for text for some reason
@@ -209,7 +209,9 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             Shape shape = shapes.get(i);
             if (shape instanceof TextShape) {
                 TextShape textShape = (TextShape) shape;
-                g2d.setFont(textShape.getFont());
+                int fontSize = (int) textShape.getStroke() * 4;  // Example scaling factor
+                Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
+                g2d.setFont(textFont);
                 g2d.drawString(textShape.getText(), textShape.getX(), textShape.getY());
             } else {
                 g2d.draw(shape);
