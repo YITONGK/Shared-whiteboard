@@ -9,6 +9,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class User extends UnicastRemoteObject implements IUser{
 
@@ -19,19 +22,46 @@ public class User extends UnicastRemoteObject implements IUser{
     private GUI gui;
     private String userId;
 
+//    public User(String ip, int port, String username) throws RemoteException {
+//        try {
+//            Registry registry = LocateRegistry.getRegistry(ip, port);
+//            userBoard = (IWhiteboard) registry.lookup("Whiteboard");
+//            userId = getUserId(username, userBoard.getUserList());
+//            boolean isApproved = userBoard.requestJoin(userId);
+//            if (!isApproved) {
+//                throw new RemoteException("Connection denied by admin.");
+//            }
+//            registry.bind(userId, this);
+//            setUpGUI(userBoard);
+//            userBoard.addUser(userId);
+//        } catch (Exception e) {
+//            consoleLog("connection failed");
+//            e.printStackTrace();
+//        }
+//    }
+
     public User(String ip, int port, String username) throws RemoteException {
+        super();
         try {
             Registry registry = LocateRegistry.getRegistry(ip, port);
             userBoard = (IWhiteboard) registry.lookup("Whiteboard");
             userId = getUserId(username, userBoard.getUserList());
+
+            if (!userBoard.requestJoin(userId)) {
+                consoleLog("Connection denied by admin.");
+                return;
+            }
+
             registry.bind(userId, this);
             setUpGUI(userBoard);
             userBoard.addUser(userId);
         } catch (Exception e) {
-            consoleLog("connection failed");
+            consoleLog("Connection failed: " + e.getMessage());
             e.printStackTrace();
+            throw new RemoteException("Failed to initialize user.", e);
         }
     }
+
 
     public String getUserId(String username, List<String> currentUserList) {
         if (!currentUserList.contains(username)) {
@@ -179,7 +209,6 @@ public class User extends UnicastRemoteObject implements IUser{
 
     @Override
     public void updateUserList(String adminName, List<String> userList) throws RemoteException {
-        consoleLog("into update user side list");
         gui.userListWindow.updateUserList(adminName, userList);
     }
 }

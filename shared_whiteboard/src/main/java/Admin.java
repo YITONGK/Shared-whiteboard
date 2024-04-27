@@ -1,14 +1,15 @@
+import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 
 public class Admin extends UnicastRemoteObject implements IWhiteboard {
@@ -19,7 +20,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     public GUI gui;
     private List<String> userList = new ArrayList<>();
 
-    private String adminName;
+    private final String adminName;
     private Registry registry;
 
     public Admin(String adminName, Registry registry) throws RemoteException {
@@ -70,6 +71,26 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         });
     }
 
+    public boolean requestJoin(String userId) throws RemoteException {
+        FutureTask<Boolean> futureTask = new FutureTask<>(() -> {
+            int result = JOptionPane.showConfirmDialog(gui,
+                    "Do you want to allow " + userId + " to join?",
+                    "User Join Request",
+                    JOptionPane.YES_NO_OPTION);
+            return result == JOptionPane.YES_OPTION;
+        });
+        try {
+            SwingUtilities.invokeAndWait(futureTask);
+        } catch (InterruptedException | InvocationTargetException e) {
+            e.printStackTrace();
+            throw new RemoteException("Failed to process join request.", e);
+        }
+        try {
+            return futureTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void addShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {

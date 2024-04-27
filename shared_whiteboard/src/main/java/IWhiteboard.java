@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface IWhiteboard extends Remote {
+    boolean requestJoin(String userId) throws RemoteException;
     void addShape(String userid, Shape shape, Color color, float stroke) throws RemoteException;
     void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException;
     void broadcastShape(String userid, Shape shape, Color color, float stroke) throws RemoteException;
