@@ -248,58 +248,5 @@ public class GUI extends JFrame implements ActionListener {
         gui.setSize(1100,800);
     }
 
-    public class UserListWindow extends JDialog {
-        private JList<String> userList;
-        private DefaultListModel<String> listModel;
-
-        public UserListWindow(Frame owner) {
-            super(owner, "User List", true);
-            setSize(300, 400);
-            setLocationRelativeTo(owner);
-            setLayout(new BorderLayout());
-
-            listModel = new DefaultListModel<>();
-            listModel.addElement("User 1");
-
-            userList = new JList<>(listModel);
-            JScrollPane scrollPane = new JScrollPane(userList);
-            add(scrollPane, BorderLayout.CENTER);
-        }
-    }
-
-    public class ChatWindow extends JDialog {
-        private JTextArea chatArea;
-        private JTextField inputField;
-        private JButton sendButton;
-
-        public ChatWindow(Frame owner) {
-            super(owner, "Chat Window", true);
-            setSize(400, 300);
-            setLocationRelativeTo(owner);
-            setLayout(new BorderLayout());
-
-            chatArea = new JTextArea();
-            chatArea.setEditable(false);
-            JScrollPane scrollPane = new JScrollPane(chatArea);
-            add(scrollPane, BorderLayout.CENTER);
-
-            JPanel inputPanel = new JPanel(new BorderLayout());
-            inputField = new JTextField();
-            sendButton = new JButton("Send");
-            sendButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (!inputField.getText().trim().isEmpty()) {
-                        chatArea.append(inputField.getText() + "\n");
-                        inputField.setText("");
-                    }
-                }
-            });
-
-            inputPanel.add(inputField, BorderLayout.CENTER);
-            inputPanel.add(sendButton, BorderLayout.EAST);
-            add(inputPanel, BorderLayout.SOUTH);
-        }
-    }
 
 }

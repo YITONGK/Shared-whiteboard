@@ -1,8 +1,7 @@
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -73,7 +72,9 @@ public class User extends UnicastRemoteObject implements IUser{
                 requestAddText(text, x, y, color, stroke);
             }
             @Override
-            public void clearBoard() {}
+            public void clearBoard() {
+
+            }
 
             @Override
             public void updateBackground(byte[] background) {
@@ -113,13 +114,20 @@ public class User extends UnicastRemoteObject implements IUser{
     }
 
     @Override
-    public void clearBoard() {
+    public void clearBoard() throws RemoteException {
+        consoleLog("user clear board");
         gui.board.shapes.clear();
         gui.board.shapeColors.clear();
         gui.board.shapeStrokes.clear();
-        gui.board.setBackgroundFile((BufferedImage) null);
+        consoleLog("size: " + gui.board.shapes.size() + gui.board.shapeColors.size() + gui.board.shapeStrokes.size());
+        gui.board.setBackgroundFile(null);
         gui.board.setBackground(Color.WHITE);
-        gui.board.repaint();
+        gui.board.setDragStart(null);
+        gui.board.setDragEnd(null);
+        SwingUtilities.invokeLater(() -> {
+            gui.board.repaint();
+            gui.board.revalidate();
+        });
     }
 
     @Override

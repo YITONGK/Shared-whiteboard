@@ -36,6 +36,14 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
     public List<Color> shapeColors = new ArrayList<>();
     public List<Float> shapeStrokes = new ArrayList<>();
 
+    public void setDragStart(Point dragStart) {
+        this.dragStart = dragStart;
+    }
+
+    public void setDragEnd(Point dragEnd) {
+        this.dragEnd = dragEnd;
+    }
+
     private Point dragStart;
 
     private Point dragEnd;
@@ -188,7 +196,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void paintComponent(Graphics g) {
-
+        consoleLog("board side size: " + shapes.size() + shapeColors.size() + shapeStrokes.size());
         super.paintComponent(g);
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
