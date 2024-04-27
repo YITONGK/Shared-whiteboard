@@ -1,6 +1,8 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -76,7 +78,25 @@ public class User extends UnicastRemoteObject implements IUser{
         setupGUIInteraction(userBoard);
     }
 
+    public void logout() {
+
+    }
+
     public void setupGUIInteraction(IWhiteboard userBoard) {
+        gui.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    userBoard.removeUser(userId);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+
+
+        );
         gui.board.setDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {

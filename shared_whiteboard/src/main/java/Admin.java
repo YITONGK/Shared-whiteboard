@@ -163,8 +163,14 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
     }
 
     @Override
-    public void removeUser(String username) throws RemoteException {
-
+    public void removeUser(String userId) throws RemoteException {
+        userList.remove(userId);
+        updateUserListWindow(adminName, userList);
+        try {
+            registry.unbind(userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
