@@ -98,6 +98,7 @@ public class User extends UnicastRemoteObject implements IUser{
             public void windowClosing(WindowEvent e) {
                 try {
                     admin.removeUser(userId);
+                    admin.broadcastChatMessage(userId + " leaves the whiteboard.\n");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -114,14 +115,10 @@ public class User extends UnicastRemoteObject implements IUser{
                 requestAddText(text, x, y, color, stroke);
             }
             @Override
-            public void clearBoard() {
-
-            }
+            public void clearBoard() {}
 
             @Override
-            public void updateBackground(byte[] background) {
-
-            }
+            public void updateBackground(byte[] background) {}
 
          });
         try {

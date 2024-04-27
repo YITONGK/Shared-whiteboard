@@ -27,6 +27,7 @@ public class AdminManagement extends JDialog {
         if (selectedUser != null) {
             try {
                 admin.kickOutUser(selectedUser);
+                admin.broadcastChatMessage(selectedUser + " is kicked out by admin.\n");
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
