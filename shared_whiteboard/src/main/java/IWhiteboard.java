@@ -12,8 +12,11 @@ public interface IWhiteboard extends Remote {
     void broadcastText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException;
     void broadcastClear() throws RemoteException;
     void broadcastBackground(byte[] background) throws RemoteException;
-    String addUser(String username) throws RemoteException;
+    void broadcastUserList(String adminName, List<String> userList) throws RemoteException;
+    void addUser(String username) throws RemoteException;
     void removeUser(String username) throws RemoteException;
+    void updateUserListWindow(String adminName, List<String> userList) throws RemoteException;
+    List<String> getUserList() throws RemoteException;
 
     void testConnection() throws RemoteException;
     List<Shape> getShapes() throws RemoteException;

@@ -196,7 +196,6 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void paintComponent(Graphics g) {
-        consoleLog("board side size: " + shapes.size() + shapeColors.size() + shapeStrokes.size());
         super.paintComponent(g);
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -263,7 +262,6 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         background =null;
         setBackground(Color.WHITE);
         repaint();
-        consoleLog("repaint in board");
         notifyClear();
     }
 

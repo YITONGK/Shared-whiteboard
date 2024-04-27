@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class UserListWindow extends JDialog {
     private JList<String> userList;
@@ -12,10 +13,17 @@ public class UserListWindow extends JDialog {
         setLayout(new BorderLayout());
 
         listModel = new DefaultListModel<>();
-        listModel.addElement("User 1");
-
         userList = new JList<>(listModel);
         JScrollPane scrollPane = new JScrollPane(userList);
         add(scrollPane, BorderLayout.CENTER);
     }
+
+    public void updateUserList(String adminName, List<String> users) {
+        listModel.clear();
+        listModel.addElement(adminName);
+        for (String user : users) {
+            listModel.addElement(user);
+        }
+    }
+
 }

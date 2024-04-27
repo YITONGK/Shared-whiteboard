@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class User extends UnicastRemoteObject implements IUser{
 
@@ -20,14 +21,29 @@ public class User extends UnicastRemoteObject implements IUser{
         try {
             Registry registry = LocateRegistry.getRegistry(ip, port);
             userBoard = (IWhiteboard) registry.lookup("Whiteboard");
-            userId = userBoard.addUser(username);
+            userId = getUserId(username, userBoard.getUserList());
             registry.bind(userId, this);
             setUpGUI(userBoard);
+            userBoard.addUser(userId);
         } catch (Exception e) {
             consoleLog("connection failed");
             e.printStackTrace();
         }
     }
+
+    public String getUserId(String username, List<String> currentUserList) {
+        if (!currentUserList.contains(username)) {
+            return username;
+        }
+        else {
+            for (int i = 1; true; i ++) {
+                if (!currentUserList.contains(username + "(" + i + ")")) {
+                    return username + "(" + i + ")";
+                }
+            }
+        }
+    }
+
 
     public static void main(String[] args) throws RemoteException{
         if (args.length == 3) {
@@ -80,7 +96,8 @@ public class User extends UnicastRemoteObject implements IUser{
             public void updateBackground(byte[] background) {
 
             }
-        });
+
+         });
         try {
             gui.board.shapes = userBoard.getShapes();
             gui.board.shapeColors = userBoard.getShapeColors();
@@ -115,11 +132,9 @@ public class User extends UnicastRemoteObject implements IUser{
 
     @Override
     public void clearBoard() throws RemoteException {
-        consoleLog("user clear board");
         gui.board.shapes.clear();
         gui.board.shapeColors.clear();
         gui.board.shapeStrokes.clear();
-        consoleLog("size: " + gui.board.shapes.size() + gui.board.shapeColors.size() + gui.board.shapeStrokes.size());
         gui.board.setBackgroundFile(null);
         gui.board.setBackground(Color.WHITE);
         gui.board.setDragStart(null);
@@ -140,5 +155,11 @@ public class User extends UnicastRemoteObject implements IUser{
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void updateUserList(String adminName, List<String> userList) throws RemoteException {
+        consoleLog("into update user side list");
+        gui.userListWindow.updateUserList(adminName, userList);
     }
 }

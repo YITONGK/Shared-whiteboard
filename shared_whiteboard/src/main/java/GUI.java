@@ -22,8 +22,9 @@ public class GUI extends JFrame implements ActionListener {
 
     public Board board;
 
+    public UserListWindow userListWindow = new UserListWindow(GUI.this);
 
-
+    public ChatWindow chatWindow = new ChatWindow(GUI.this);
 
     public GUI(Boolean isAdmin) {
 
@@ -215,7 +216,6 @@ public class GUI extends JFrame implements ActionListener {
         userList.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                UserListWindow userListWindow = new UserListWindow(GUI.this);
                 userListWindow.setVisible(true);
             }
         });
@@ -224,7 +224,6 @@ public class GUI extends JFrame implements ActionListener {
         chatBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ChatWindow chatWindow = new ChatWindow(GUI.this);
                 chatWindow.setVisible(true);
             }
         });
