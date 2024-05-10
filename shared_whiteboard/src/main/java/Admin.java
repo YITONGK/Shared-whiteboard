@@ -35,7 +35,24 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         setupGUIInteraction();
     }
 
+    public static void main(String[] args) {
+        String ip = args[0];
+        int port = Integer.parseInt(args[1]);
+        String adminName = args[2];
+        try {
+            Registry registry = LocateRegistry.createRegistry(port);
+            IWhiteboard adminBoard = new Admin(adminName, registry);
+            adminBoard.updateUserListWindow(adminName, new ArrayList<>());
+            registry.bind("Whiteboard", adminBoard);
+            System.out.println("Admin starts");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // GUI components and interaction setup
     public void setupGUIInteraction() {
+        // inform clients upon server termination
         gui.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -46,6 +63,7 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
                 }
             }
         });
+        // broadcast modifications on shared whiteboard
         gui.board.setDrawingListener(new DrawingListener() {
             @Override
             public void shapeDrawn(Shape shape, Color color, float stroke) {
@@ -71,7 +89,6 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
                     e.printStackTrace();
                 }
             }
-
             @Override
             public void updateBackground(byte[] background) {
                 try {
@@ -83,7 +100,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         });
     }
 
+    // Process user join request with admin confirmation
     public boolean requestJoin(String userId) throws RemoteException {
+        // use FutureTask to enforce admin process this request ASAP
         FutureTask<Boolean> futureTask = new FutureTask<>(() -> {
             int result = JOptionPane.showConfirmDialog(gui,
                     "Do you want to allow " + userId + " to join?",
@@ -104,8 +123,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Add shapes (including line, rectangle, circle, oval, free draw, eraser) to local and remote canvas
     @Override
-    public void addShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
+    public synchronized void addShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
         gui.board.shapeStrokes.add(stroke);
@@ -113,8 +133,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         broadcastShape(userId, shape, color, stroke);
     }
 
+    // Add text to local and remote canvas
     @Override
-    public void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
+    public synchronized void addText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
         TextShape shape = new TextShape(text, x, y, stroke);
         gui.board.shapes.add(shape);
         gui.board.shapeColors.add(color);
@@ -123,8 +144,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         broadcastText(userId, text, x, y, color, stroke);
     }
 
+    // Broadcast a shape to all connected users except the sender
     @Override
-    public void broadcastShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
+    public synchronized void broadcastShape(String userId, Shape shape, Color color, float stroke) throws RemoteException {
         try {
             for (String user: userList) {
                 if (!user.equals(userId)) {
@@ -137,8 +159,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Broadcast text to all connected users except the sender
     @Override
-    public void broadcastText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
+    public synchronized void broadcastText(String userId, String text, int x, int y, Color color, float stroke) throws RemoteException {
         try {
             for (String user: userList) {
                 if (!user.equals(userId)) {
@@ -151,8 +174,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Broadcast command to clear the board to all users
     @Override
-    public void broadcastClear() {
+    public synchronized void broadcastClear() {
         try {
             for (String user: userList) {
                 IUser u = (IUser) registry.lookup(user);
@@ -163,8 +187,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Broadcast a new background image to all users
     @Override
-    public void broadcastBackground(byte[] background) throws RemoteException {
+    public synchronized void broadcastBackground(byte[] background) throws RemoteException {
         try {
             for (String user: userList) {
                 IUser u = (IUser) registry.lookup(user);
@@ -175,8 +200,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Broadcast updated user list to all users
     @Override
-    public void broadcastUserList(String adminName, List<String> userList) throws RemoteException {
+    public synchronized void broadcastUserList(String adminName, List<String> userList) throws RemoteException {
         try {
             for (String user: userList) {
                 IUser u = (IUser) registry.lookup(user);
@@ -187,8 +213,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Broadcast a chat message to all users
     @Override
-    public void broadcastChatMessage(String message) throws RemoteException {
+    public synchronized void broadcastChatMessage(String message) throws RemoteException {
         messages.add(message);
         gui.chatWindow.updateChatBox(message);
         try {
@@ -201,8 +228,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Broadcast admin exit notification to all users, and let them exit as well
     @Override
-    public void broadcastAdminExit() throws RemoteException {
+    public synchronized void broadcastAdminExit() throws RemoteException {
         try {
             for (String user: userList) {
                 IUser u = (IUser) registry.lookup(user);
@@ -213,16 +241,18 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Add a new user to the system
     @Override
-    public void addUser(String username) throws RemoteException {
+    public synchronized void addUser(String username) throws RemoteException {
         userList.add(username);
         updateUserListWindow(adminName, userList);
         updateUserOnlyList(username);
         loadHistoryMessage(username, messages);
     }
 
+    // Remove a user from the system
     @Override
-    public void removeUser(String userId) throws RemoteException {
+    public synchronized void removeUser(String userId) throws RemoteException {
         userList.remove(userId);
         updateUserListWindow(adminName, userList);
         try {
@@ -232,8 +262,9 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Manager kick out a user
     @Override
-    public void kickOutUser(String userId) throws RemoteException {
+    public synchronized void kickOutUser(String userId) throws RemoteException {
         userList.remove(userId);
         updateUserListWindow(adminName, userList);
         try {
@@ -245,17 +276,20 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Update the user list display in GUI
     @Override
-    public void updateUserListWindow(String adminName, List<String> userList) throws RemoteException {
+    public synchronized void updateUserListWindow(String adminName, List<String> userList) throws RemoteException {
         gui.userListWindow.updateUserList(adminName, userList);
         broadcastUserList(adminName, userList);
     }
 
+    // Update the admin management when a new user joins
     @Override
     public void updateUserOnlyList(String newUser) throws RemoteException {
         gui.adminManagement.addNewUser(newUser);
     }
 
+    // Load and send historical chat messages to a new user
     @Override
     public void loadHistoryMessage(String userId, List<String> messages) throws RemoteException {
         try {
@@ -266,33 +300,39 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
+    // Retrieve the current list of users
     @Override
-    public List<String> getUserList() {
+    public synchronized List<String> getUserList() {
         return userList;
     }
 
+    // Retrieve the administrator's name
     @Override
-    public String getAdminName() {
+    public synchronized String getAdminName() {
         return adminName;
     }
 
+    // Retrieve the current list of shapes on the board
     @Override
-    public List<Shape> getShapes() throws RemoteException {
+    public synchronized List<Shape> getShapes() throws RemoteException {
         return gui.board.shapes;
     }
 
+    // Retrieve the current list of colors for shapes on the board
     @Override
-    public List<Color> getShapeColors() throws RemoteException {
+    public synchronized List<Color> getShapeColors() throws RemoteException {
         return gui.board.shapeColors;
     }
 
+    // Retrieve the current list of strokes for shapes on the board
     @Override
-    public List<Float> getShapeStrokes() throws RemoteException {
+    public synchronized List<Float> getShapeStrokes() throws RemoteException {
         return gui.board.shapeStrokes;
     }
 
+    // Retrieve the current background image as a byte array
     @Override
-    public byte[] getBackgroundImage() throws RemoteException {
+    public synchronized byte[] getBackgroundImage() throws RemoteException {
         try {
             if (gui.board.getBackgroundFile() != null) {
                 return gui.board.serializeImage(gui.board.getBackgroundFile());
@@ -303,19 +343,4 @@ public class Admin extends UnicastRemoteObject implements IWhiteboard {
         }
     }
 
-
-    public static void main(String[] args) {
-        String ip = args[0];
-        int port = Integer.parseInt(args[1]);
-        String adminName = args[2];
-        try {
-            Registry registry = LocateRegistry.createRegistry(port);
-            IWhiteboard adminBoard = new Admin(adminName, registry);
-            adminBoard.updateUserListWindow(adminName, new ArrayList<>());
-            registry.bind("Whiteboard", adminBoard);
-            System.out.println("Admin starts");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

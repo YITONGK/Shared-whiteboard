@@ -19,6 +19,7 @@ public class User extends UnicastRemoteObject implements IUser{
     private GUI gui;
     private String userId;
 
+    // try to connect to RMI server and join the shared whiteboard
     public User(String ip, int port, String username) throws RemoteException {
         super();
         try {
@@ -41,7 +42,7 @@ public class User extends UnicastRemoteObject implements IUser{
         }
     }
 
-
+    // get unique user id for registration
     public String getUserId(String username, List<String> currentUserList) {
         if (!currentUserList.contains(username)) {
             return username;
@@ -73,6 +74,7 @@ public class User extends UnicastRemoteObject implements IUser{
 
     }
 
+    // request admin to add the shape drawn by this user
     public void requestAddShape(Shape shape, Color color, float stroke) {
         try {
             admin.addShape(userId, shape, color, stroke);
@@ -81,6 +83,7 @@ public class User extends UnicastRemoteObject implements IUser{
         }
     }
 
+    // request admin to add the text typed by this user
     public void requestAddText(String text, int x, int y, Color color, float stroke) {
         try {
             admin.addText(userId, text, x, y, color, stroke);
@@ -89,7 +92,7 @@ public class User extends UnicastRemoteObject implements IUser{
         }
     }
 
-
+    // set up interaction between the user and the canvas
     public void setUpGUI(IWhiteboard admin, String userId) {
         try {
             gui = new GUI(false, admin.getAdminName(), userId, admin);
@@ -101,7 +104,7 @@ public class User extends UnicastRemoteObject implements IUser{
         setupGUIInteraction(admin);
     }
 
-
+    // set up event listener in the GUI
     public void setupGUIInteraction(IWhiteboard admin) {
         gui.addWindowListener(new WindowAdapter() {
             @Override
@@ -130,7 +133,7 @@ public class User extends UnicastRemoteObject implements IUser{
             @Override
             public void updateBackground(byte[] background) {}
 
-         });
+        });
         try {
             gui.board.shapes = admin.getShapes();
             gui.board.shapeColors = admin.getShapeColors();
@@ -199,6 +202,7 @@ public class User extends UnicastRemoteObject implements IUser{
         gui.chatWindow.updateChatBox(message);
     }
 
+    // show dialog when kicked by the admin
     @Override
     public void exitApplication() throws RemoteException {
         clearBoard();
@@ -211,6 +215,7 @@ public class User extends UnicastRemoteObject implements IUser{
         });
     }
 
+    // show dialog when admin close the server
     @Override
     public void showAdminExit() throws RemoteException {
         clearBoard();
@@ -223,6 +228,7 @@ public class User extends UnicastRemoteObject implements IUser{
         });
     }
 
+    // when first enter the system, chat history will also be displayed
     @Override
     public void loadChatHistory(List<String> messages) throws RemoteException {
         for (String message: messages) {

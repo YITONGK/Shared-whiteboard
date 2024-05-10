@@ -18,6 +18,7 @@ public class UserListWindow extends JDialog {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    // update user list when there is a change
     public void updateUserList(String adminName, List<String> users) {
         listModel.clear();
         listModel.addElement(adminName);

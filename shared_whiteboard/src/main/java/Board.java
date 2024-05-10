@@ -22,19 +22,27 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         System.out.println(s);
     }
 
+    // enum to define different drawing modes
     public enum Mode {
         RECTANGLE, CIRCLE, OVAL, LINE, DRAW, TEXT, ERASER
     }
 
     private DrawingListener drawingListener;
-
     private Mode currentMode = Mode.DRAW;
-
     private Color currentColor = Color.BLACK;
     private BasicStroke currentStroke = new BasicStroke(12);
     public List<Shape> shapes = new ArrayList<>();
     public List<Color> shapeColors = new ArrayList<>();
     public List<Float> shapeStrokes = new ArrayList<>();
+    private Point dragStart;
+    private Point dragEnd;
+    private BufferedImage background;
+
+    public Board() {
+        addMouseListener(this);
+        addMouseMotionListener(this);
+        setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+    }
 
     public void setDragStart(Point dragStart) {
         this.dragStart = dragStart;
@@ -44,24 +52,12 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         this.dragEnd = dragEnd;
     }
 
-    private Point dragStart;
-
-    private Point dragEnd;
-
     public void setBackgroundFile(BufferedImage background) {
         this.background = background;
     }
 
     public BufferedImage getBackgroundFile() {
         return background;
-    }
-
-    private BufferedImage background;
-
-    public Board() {
-        addMouseListener(this);
-        addMouseMotionListener(this);
-        setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
 
     public void setCurrentMode(Mode mode) {
@@ -76,7 +72,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         this.currentStroke = currentStroke;
     }
 
-
+    // handle mouse click event for text mode
     @Override
     public void mouseClicked(MouseEvent e) {
         if (currentMode == Mode.TEXT) {
@@ -99,6 +95,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         }
     }
 
+    // get the starting and ending point when drawing a shape
     @Override
     public void mousePressed(MouseEvent e) {
         dragStart = new Point(e.getX(), e.getY());
@@ -106,6 +103,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         repaint();
     }
 
+    // tasks to do after completing drawing a shape
     @Override
     public void mouseReleased(MouseEvent e) {
         Shape shape = createShape(e);
@@ -118,6 +116,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         repaint();
     }
 
+    // Create a shape based on the current drawing mode and mouse positions
     private Shape createShape(MouseEvent e) {
         switch (currentMode) {
             case RECTANGLE:
@@ -149,17 +148,15 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         }
     }
 
-
     @Override
     public void mouseEntered(MouseEvent e) {
-
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-
     }
 
+    // Continue drawing a free line or perform live update for shapes
     @Override
     public void mouseDragged(MouseEvent e) {
         Point newPoint = new Point(e.getX(), e.getY());
@@ -167,16 +164,16 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             if (dragEnd != null) {
                 Shape line = new Line2D.Float(dragEnd, newPoint);
                 shapes.add(line);
-                // Use the background color for eraser mode
+                // Use color white for eraser mode
                 if (currentMode == Mode.ERASER) {
-                    shapeColors.add(Color.WHITE);  // Assuming the background is white
-                    shapeStrokes.add(new BasicStroke(currentStroke.getLineWidth(), // Keep the line width
-                            BasicStroke.CAP_ROUND,  // Round caps for a smoother erase
-                            BasicStroke.JOIN_ROUND).getLineWidth()); // Round joins for smoother erase
+                    shapeColors.add(Color.WHITE);
+                    shapeStrokes.add(new BasicStroke(currentStroke.getLineWidth(),
+                            BasicStroke.CAP_ROUND,
+                            BasicStroke.JOIN_ROUND).getLineWidth());
                     notifyShapeDrawn(line, Color.WHITE, currentStroke.getLineWidth());
                 } else {
-                    shapeColors.add(currentColor); // Regular drawing color
-                    shapeStrokes.add(currentStroke.getLineWidth()); // Regular stroke
+                    shapeColors.add(currentColor);
+                    shapeStrokes.add(currentStroke.getLineWidth());
                     notifyShapeDrawn(line, currentColor, currentStroke.getLineWidth());
                 }
             }
@@ -188,12 +185,11 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         repaint();
     }
 
-
     @Override
     public void mouseMoved(MouseEvent e) {
-
     }
 
+    // load all the elements to the board
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -255,6 +251,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         }
     }
 
+    // all the work related to clearing the board
     public void clearBoard() {
         shapes.clear();
         shapeColors.clear();
@@ -267,6 +264,7 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         notifyClear();
     }
 
+    // save canvas image to a png file
     public void saveAsPng(File file) throws IOException {
         BufferedImage image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
@@ -285,14 +283,17 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         this.drawingListener = drawingListener;
     }
 
+    // notify listeners when a shape is drawn
     private void notifyShapeDrawn(Shape shape, Color color, float stroke) {
         drawingListener.shapeDrawn(shape, color, stroke);
     }
 
+    // notify listeners when a text is added
     private void notifyTextDrawn(String text, int x, int y, Color color, float stroke) {
         drawingListener.textDrawn(text, x, y, color, stroke);
     }
 
+    // notify the listeners when the board is cleared
     private void notifyClear() {
         drawingListener.clearBoard();
     }
@@ -305,12 +306,10 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
         }
     }
 
+    // convert a image to a byte stream
     public byte[] serializeImage(BufferedImage image) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
         return baos.toByteArray();
     }
-
-
-
 }

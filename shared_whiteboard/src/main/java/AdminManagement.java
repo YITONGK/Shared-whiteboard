@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AdminManagement extends JDialog {
     private JList<String> userList;
@@ -22,6 +20,7 @@ public class AdminManagement extends JDialog {
         add(removeButton, BorderLayout.SOUTH);
     }
 
+    // admin can select who to be kicked out
     public void removeSelectedUser(IWhiteboard admin) {
         String selectedUser = userList.getSelectedValue();
         if (selectedUser != null) {

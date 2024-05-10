@@ -19,23 +19,20 @@ public class GUI extends JFrame implements ActionListener {
     private final BasicStroke m = new BasicStroke(12);
     private final BasicStroke l = new BasicStroke(16);
     private final BasicStroke xl = new BasicStroke(20);
-
     public Board board;
-
     public UserListWindow userListWindow;
-
     public ChatWindow chatWindow;
-
     public AdminManagement adminManagement;
     File currentFile = null;
 
+    // build up GUI
     public GUI(Boolean isAdmin, String adminName, String userId, IWhiteboard admin) {
 
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
         contentPane.setLayout(null);
-
+        // set up drawing area
         board = new Board();
         board.setBounds(25, 85, 1050, 640);
         board.setBackground(Color.white);
@@ -45,6 +42,7 @@ public class GUI extends JFrame implements ActionListener {
         // menu bar
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
+        // set admin menu
         if (isAdmin) {
             JMenu fileMenu = new JMenu("File");
             menuBar.add(fileMenu);
@@ -116,9 +114,9 @@ public class GUI extends JFrame implements ActionListener {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                    // Perform any cleanup operations you need here
-                    dispose(); // Dispose all resources and close the application window
-                    System.exit(0); // Ensure JVM is properly closed
+                    // Perform cleanup operations
+                    dispose();
+                    System.exit(0);
                 }
             });
             fileMenu.add(newFile);
@@ -137,11 +135,11 @@ public class GUI extends JFrame implements ActionListener {
 
             menuBar.add(manageMenu);
         } else {
+            // gor regular users, display a message
             JMenu welcome = new JMenu("Hi " + userId + "! Welcome to " + adminName + "'s whiteboard");
             menuBar.add(welcome);
         }
-
-
+        // load button image
         JButton rectangle = new JButton(new ImageIcon((this.getClass().getResource("rec.png"))));
         JButton circle = new JButton(new ImageIcon((this.getClass().getResource("circle.png"))));
         JButton oval = new JButton(new ImageIcon((this.getClass().getResource("oval.png"))));
@@ -149,7 +147,7 @@ public class GUI extends JFrame implements ActionListener {
         JButton draw = new JButton(new ImageIcon((this.getClass().getResource("pen.png"))));
         JButton text = new JButton(new ImageIcon((this.getClass().getResource("text.png"))));
         JButton eraser = new JButton(new ImageIcon((this.getClass().getResource("eraser.png"))));
-
+        // add button click events
         rectangle.addActionListener(e -> board.setCurrentMode(Board.Mode.RECTANGLE));
         circle.addActionListener(e -> board.setCurrentMode(Board.Mode.CIRCLE));
         oval.addActionListener(e -> board.setCurrentMode(Board.Mode.OVAL));
@@ -171,15 +169,13 @@ public class GUI extends JFrame implements ActionListener {
 
         Dimension buttonSize = new Dimension(50, 40);
         for (JButton jButton: buttonList) {
-
             jButton.setPreferredSize(buttonSize);
             buttonPane.add(jButton);
         }
-
+        // stroke size configuration
         JLabel sizeLabel = new JLabel("Pen size:");
         sizeLabel.setFont(new Font("Ariel", Font.PLAIN, 20));
         sizeLabel.setSize(buttonSize);
-
         JComboBox<String> sizeBox = new JComboBox(new String[] {"XS", "S", "M", "L", "XL"});
         sizeBox.setSelectedItem("M");
         sizeBox.setPreferredSize(new Dimension(70, 60));
@@ -205,10 +201,9 @@ public class GUI extends JFrame implements ActionListener {
 
         buttonPane.add(sizeLabel);
         buttonPane.add(sizeBox);
-
+        // color configuration
         JLabel colorLabel = new JLabel("Current Color:");
         colorLabel.setFont(new Font("Ariel", Font.PLAIN, 20));
-
         JButton colorButton = new JButton("Other Colors");
         colorButton.setPreferredSize(new Dimension(100, 40));
         JLabel colorDisplay = new JLabel();
@@ -230,7 +225,7 @@ public class GUI extends JFrame implements ActionListener {
         buttonPane.add(colorLabel);
         buttonPane.add(colorDisplay);
         buttonPane.add(colorButton);
-
+        // user list set up
         JButton userList = new JButton("User list");
         userList.setPreferredSize(new Dimension(100, 40));
         userListWindow = new UserListWindow(GUI.this);
@@ -240,6 +235,7 @@ public class GUI extends JFrame implements ActionListener {
                 userListWindow.setVisible(true);
             }
         });
+        // chat window set up
         JButton chatBox = new JButton("Chat Box");
         chatBox.setPreferredSize(new Dimension(100, 40));
         chatWindow = new ChatWindow(GUI.this, userId, admin);
@@ -254,7 +250,6 @@ public class GUI extends JFrame implements ActionListener {
         buttonPane.add(chatBox);
         buttonPane.setBounds(22, 6, 1050, 75);
         contentPane.add(buttonPane);
-
     }
 
     @Override
