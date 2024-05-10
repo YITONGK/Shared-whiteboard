@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +27,7 @@ public class GUI extends JFrame implements ActionListener {
     public ChatWindow chatWindow;
 
     public AdminManagement adminManagement;
+    File currentFile = null;
 
     public GUI(Boolean isAdmin, String adminName, String userId, IWhiteboard admin) {
 
@@ -62,10 +62,10 @@ public class GUI extends JFrame implements ActionListener {
 
                 int result = fileChooser.showOpenDialog(this);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = fileChooser.getSelectedFile();
+                    currentFile = fileChooser.getSelectedFile();
                     try {
                         board.clearBoard();
-                        board.setBackgroundImage(selectedFile);
+                        board.setBackgroundImage(currentFile);
                     } catch (IOException ex) {
                         JOptionPane.showMessageDialog(this, "Error loading image: " + ex.getMessage(), "Load Error", JOptionPane.ERROR_MESSAGE);
                     }
@@ -73,10 +73,15 @@ public class GUI extends JFrame implements ActionListener {
             });
             JMenuItem save = new JMenuItem("Save");
             save.addActionListener(e -> {
-                File defaultFile = new File("default.png");  // Default save location and name
+                File fileToSave;
+                if (currentFile != null) {
+                    fileToSave = currentFile;
+                } else {
+                    fileToSave = new File("default.png");
+                }
                 try {
-                    board.saveAsPng(defaultFile);
-                    JOptionPane.showMessageDialog(this, "Image saved to " + defaultFile.getAbsolutePath());
+                    board.saveAsPng(fileToSave);
+                    JOptionPane.showMessageDialog(this, "Image saved to " + fileToSave.getAbsolutePath());
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(this, "Error saving image: " + ex.getMessage(), "Save Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -132,7 +137,7 @@ public class GUI extends JFrame implements ActionListener {
 
             menuBar.add(manageMenu);
         } else {
-            JMenu welcome = new JMenu(adminName + "'s whiteboard");
+            JMenu welcome = new JMenu("Hi " + userId + "! Welcome to " + adminName + "'s whiteboard");
             menuBar.add(welcome);
         }
 

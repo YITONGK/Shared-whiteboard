@@ -35,8 +35,8 @@ public class User extends UnicastRemoteObject implements IUser{
             setUpGUI(admin, userId);
             admin.addUser(userId);
         } catch (Exception e) {
-            consoleLog("Connection failed: " + e.getMessage());
-            e.printStackTrace();
+//            consoleLog("Connection failed: " + e.getMessage());
+//            e.printStackTrace();
             throw new RemoteException("Failed to initialize user.", e);
         }
     }
@@ -58,7 +58,17 @@ public class User extends UnicastRemoteObject implements IUser{
 
     public static void main(String[] args) throws RemoteException{
         if (args.length == 3) {
-            User user = new User(args[0], Integer.parseInt(args[1]), args[2]);
+            try {
+                new User(args[0], Integer.parseInt(args[1]), args[2]);
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(null,
+                            "The server is currently not available",
+                            "Connection Error",
+                            JOptionPane.WARNING_MESSAGE);
+                    System.exit(0);
+                });
+            }
         }
 
     }
