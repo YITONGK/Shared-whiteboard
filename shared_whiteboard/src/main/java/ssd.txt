@@ -1,0 +1,77 @@
+sequenceDiagram
+    participant Admin as Admin
+    participant Registry as Registry
+    participant GUI as GUI
+    participant User as User
+    participant AllUsers as AllUsers
+
+    Admin->>+Registry: create registry with port
+    Admin->>+Registry: bind Admin(IWhiteboard)
+    Admin->>GUI: set up GUI and event listeners
+    GUI-->>Admin: GUI initialized
+    %% Admin->>Admin: update user list
+
+    User->>+Registry: find registry with ip and port
+    User->>+Registry: look up the IWhiteboard
+    User->>+Admin: request to join the system
+    Admin-->>User: user join response
+    User->>+Registry: bind User(IUser)
+    User->>+Admin: add the current user with a unique id
+    GUI->>+User: set up concurrent GUI
+    Admin->>+AllUsers: broadcast new user join
+
+    note over Admin, AllUsers: GUI Interactions and Admin Management
+
+    User->>+Admin: close the window
+    Admin->>+Registry: unbind this user(IUser)
+    Admin->>+AllUsers: broadcast user exit
+
+    Admin->>Admin: Exit the system
+    Admin->>AllUsers: broadcast admin exit
+    Admin-->>Registry: unbind Admin("IWhiteboard")
+    AllUsers->>+AllUsers: show admin exit
+
+
+
+sequenceDiagram
+    participant Admin as Admin
+    participant AdminGUI as AdminGUI
+    participant AllUsers as AllUsers
+    participant UserGUI as UserGUI
+    participant User as User
+
+    %% Admin->>+AdminGUI: new a file
+    %% AdminGUI->>+AdminGUI: clear board
+    %% Admin->>+AllUsers: broadcast clear board
+    %% AllUsers->>+UserGUI: clear board
+    %% Admin->>+AdminGUI: open a file
+    %% AdminGUI->>+AdminGUI: load image to board
+    %% Admin->>+AllUsers: broadcast background
+    %% AllUsers->>+ UserGUI: synchronize background
+    %% Admin->>+AdminGUI: save file (as)
+    %% AdminGUI-->>Admin: save image to disk
+
+    loop User Interaction with UserGUI
+        User->>UserGUI: add a shape/text
+        UserGUI->>Admin: request add shape/text
+        Admin->>AdminGUI: add shape/text to Admin GUI
+        Admin->>AllUsers: broadcast shape/text to everyone
+        AllUsers->>UserGUI: add corresponding shape/text to own GUIs
+    end
+
+    loop Admin Interaction with AdminGUI
+        Admin->>AdminGUI: add a shape/text to Admin GUI
+        Admin->>AllUsers: broadcast shape/text to everyone
+        AllUsers->>UserGUI: add corresponding shape/text to own GUIs
+    end
+
+    loop Chat box
+        User->>Admin: send a chat message in chat box
+        Admin->>AllUsers: broadcast message to all users and update the chat box
+    end
+
+    %% Admin->>+User: kick out a user(userId)
+    %% User->>+User: exit application
+    %% Admin->>+AllUsers: broadcast user out
+
+    %% note over Admin, User: GUI Interactions

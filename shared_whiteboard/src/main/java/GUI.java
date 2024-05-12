@@ -135,7 +135,7 @@ public class GUI extends JFrame implements ActionListener {
 
             menuBar.add(manageMenu);
         } else {
-            // gor regular users, display a message
+            // for regular users, display a message
             JMenu welcome = new JMenu("Hi " + userId + "! Welcome to " + adminName + "'s whiteboard");
             menuBar.add(welcome);
         }

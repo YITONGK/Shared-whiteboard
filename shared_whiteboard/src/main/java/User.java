@@ -36,8 +36,6 @@ public class User extends UnicastRemoteObject implements IUser{
             setUpGUI(admin, userId);
             admin.addUser(userId);
         } catch (Exception e) {
-//            consoleLog("Connection failed: " + e.getMessage());
-//            e.printStackTrace();
             throw new RemoteException("Failed to initialize user.", e);
         }
     }

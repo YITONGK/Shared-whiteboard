@@ -79,16 +79,16 @@ public class Board extends JPanel implements MouseListener, MouseMotionListener 
             String text = JOptionPane.showInputDialog(this, "Enter Text:", "Text Input", JOptionPane.PLAIN_MESSAGE);
             if (text != null && !text.isEmpty()) {
                 // Calculate font size based on stroke width
-                int fontSize = (int) currentStroke.getLineWidth() * 4;  // Example scaling factor
+                int fontSize = (int) currentStroke.getLineWidth() * 4;
                 Font textFont = new Font("Ariel", Font.PLAIN, 12).deriveFont((float) fontSize);
                 FontMetrics metrics = getFontMetrics(textFont);
                 int x = e.getX();
-                int y = e.getY() - metrics.getHeight() / 2 + metrics.getAscent();  // Adjust to center text vertically around the click point
+                int y = e.getY() - metrics.getHeight() / 2 + metrics.getAscent();
 
                 TextShape textShape = new TextShape(text, x, y, currentStroke.getLineWidth());
                 shapes.add(textShape);
                 shapeColors.add(currentColor);
-                shapeStrokes.add(currentStroke.getLineWidth());  // This might not be necessary unless you want to keep track of strokes for text for some reason
+                shapeStrokes.add(currentStroke.getLineWidth());
                 notifyTextDrawn(text, x, y, currentColor, currentStroke.getLineWidth());
                 repaint();
             }

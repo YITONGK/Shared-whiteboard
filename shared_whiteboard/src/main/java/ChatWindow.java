@@ -27,8 +27,6 @@ public class ChatWindow extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 if (!inputField.getText().trim().isEmpty()) {
                     String message = username + ": " + inputField.getText() + "\n";
-//                    chatArea.append(message);
-//                    messages.add(message);
                     try {
                         admin.broadcastChatMessage(message);
                     } catch (Exception ex) {
